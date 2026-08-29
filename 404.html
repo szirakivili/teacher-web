@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Az oldal nem található</title>
+    <!-- Külső stíluslap beágyazása (ugyanaz a téma) -->
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        /* Egyedi kiegészítések a 404-es oldalhoz */
+        .error-code {
+            font-size: 6rem;
+            font-weight: 800;
+            color: var(--color-robotics); /* Piros kiemelés */
+            text-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+
+        .error-msg {
+            font-size: 1.5rem;
+            color: var(--text-white);
+            margin-bottom: 30px;
+        }
+
+        .btn-home {
+            display: inline-block;
+            background-color: var(--color-grade-9); /* Kék gomb */
+            color: var(--text-white);
+            padding: 14px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            border: 1px solid transparent;
+            margin-bottom: 50px;
+        }
+
+        .btn-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+            background-color: #2563eb;
+        }
+
+        /* Easter Egg Részleg */
+        .easter-egg-container {
+            border-top: 1px dashed var(--border-color);
+            padding-top: 30px;
+            margin-top: 20px;
+        }
+
+        .hint {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.2s;
+        }
+
+        .hint:hover {
+            color: var(--text-main);
+        }
+
+        /* Rejtett terminál játék */
+        .terminal {
+            display: none; /* Alapból rejtett, JS teszi láthatóvá */
+            background-color: #05070c;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            max-width: 500px;
+            margin: 20px auto 0 auto;
+            padding: 15px;
+            text-align: left;
+            font-family: 'Courier New', Courier, monospace;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.7);
+        }
+
+        .terminal-header {
+            color: #6b7280;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #1f2937;
+            padding-bottom: 5px;
+        }
+
+        .terminal-output {
+            color: var(--color-grade-10); /* Zöld terminál szöveg */
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+            min-height: 50px;
+            margin-bottom: 10px;
+        }
+
+        .terminal-input-line {
+            display: flex;
+            align-items: center;
+            color: var(--color-grade-10);
+        }
+
+        .terminal-input-line span {
+            margin-right: 5px;
+        }
+
+        .terminal-input {
+            background: transparent;
+            border: none;
+            color: var(--text-white);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            width: 100%;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="error-code">¯\_(ツ)_/¯</div>
+        <h1 class="error-msg">404<br>Hoppá! Ez az oldal nem található.</h1>
+        <p class="header-subtitle" style="margin-bottom: 30px;">Úgy tűnik, rossz linkre kattintottál, vagy törölve lett az anyag, amit kerestél.</p>
+        
+        <!-- Vissza a főoldalra link (feltételezve, hogy a gyökérben van az index) -->
+        <a href="../" class="btn-home">Vissza a kezdőképernyőre</a>
+
+        <!-- Easter Egg szekció -->
+        <div class="easter-egg-container">
+            <p id="hintText" class="hint">Kattints ide a weboldal meghekkeléséhez...</p>
+            
+            <div id="terminalBox" class="terminal">
+                <div class="terminal-header">root@kzmk.sziraki.hu:~# restore_v1.0</div>
+                <div id="terminalOutput" class="terminal-output">Rendszerhiba észlelve. Írd be, hogy 'help' az elérhető parancsokért!</div>
+                <div class="terminal-input-line">
+                    <span>$</span>
+                    <input type="text" id="terminalCmd" class="terminal-input" autofocus autocomplete="off" spellcheck="false">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const hintText = document.getElementById("hintText");
+        const terminalBox = document.getElementById("terminalBox");
+        const terminalCmd = document.getElementById("terminalCmd");
+        const terminalOutput = document.getElementById("terminalOutput");
+
+        // Kattintásra megjelenik a miniterminál
+        hintText.addEventListener("click", function() {
+            terminalBox.style.display = "block";
+            hintText.style.display = "none";
+            terminalCmd.focus();
+        });
+
+        // Parancsok kezelése
+        terminalCmd.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                const input = terminalCmd.value.trim().toLowerCase();
+                let response = "";
+
+                if (input === "help") {
+                    response = "Elérhető parancsok:\n  - 'sudo rm -rf /' : Rendszerfájlok törlése\n  - 'grade10'      : Jegyek módosítása\n  - 'hello'        : Köszönés a gépnek\n  - 'clear'        : Képernyő törlése";
+                } else if (input === "sudo rm -rf /") {
+                    response = "Hiba: Nincs root jogosultságod! Nice try, de a házit akkor is be kell adni. 😉";
+                } else if (input === "grade10") {
+                    response = "Hozzáférés megtagadva. Minden ötösöm ki van osztva. Kérlek, tanulj többet!";
+                } else if (input === "hello") {
+                    response = "Szia! Ez a terminál csak egy easter egg. Menj vissza tanulni!";
+                } else if (input === "clear") {
+                    terminalOutput.innerHTML = "";
+                    terminalCmd.value = "";
+                    return;
+                } else if (input === "") {
+                    return;
+                } else {
+                    response = `A parancs nem felismerhető: '${input}'. Írd be, hogy 'help'.`;
+                }
+
+                terminalOutput.innerHTML += `\n\n$ ${terminalCmd.value}\n${response}`;
+                terminalCmd.value = "";
+                
+                // Automatikus görgetés az aljára, ha sok a szöveg
+                terminalBox.scrollTop = terminalBox.scrollHeight;
+            }
+        });
+    </script>
+
+</body>
+</html>

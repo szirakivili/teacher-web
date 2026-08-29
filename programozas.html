@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blokk programozás Python kóddal</title>
+    
+    <!-- A Google Blockly könyvtárak betöltése internetről (CDN) -->
+    <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+    <script src="https://unpkg.com/blockly/python_compressed.js"></script>
+    <script src="https://unpkg.com/blockly/msg/hu.js"></script>
+
+    <style>
+        /* --- STÍLUSOK --- */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f4f7f6;
+        }
+
+        header {
+            background-color: #0056b3;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        /* Fő tartalom (két oszlop) */
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Bal oldal: Blokk szerkesztő */
+        #blocklyDiv {
+            width: 60%;
+            height: 100%;
+            border-right: 5px solid #333;
+        }
+
+        /* Jobb oldal: Python kód nézet */
+        .code-panel {
+            width: 40%;
+            height: 100%;
+            background-color: #1e1e1e; /* Sötét "hacker" stílusú háttér */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .code-panel h3 {
+            color: #4CAF50; /* Zöld szín a Python felirathoz */
+            margin: 15px 20px;
+            font-size: 18px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        #pythonCode {
+            flex: 1;
+            background-color: transparent;
+            color: #d4d4d4; /* Világosszürke kód szín */
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 16px;
+            padding: 0 20px 20px 20px;
+            border: none;
+            resize: none;
+            outline: none;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Vizuális Kódolás - Python Fordító</h1>
+        <span>Húzd be a blokkokat a bal oldalra!</span>
+    </header>
+
+    <div class="container">
+        <!-- Itt jelenik meg a Blockly felület -->
+        <div id="blocklyDiv"></div>
+        
+        <!-- Itt jelenik meg a generált Python kód -->
+        <div class="code-panel">
+            <h3>Generált Python kód:</h3>
+            <textarea id="pythonCode" readonly placeholder="Itt fog megjelenni a kódod..."></textarea>
+        </div>
+    </div>
+
+    <!-- ESZKÖZTÁR (Toolbox): Itt határozzuk meg, milyen blokkok legyenek elérhetők -->
+    <xml id="toolbox" style="display: none">
+        <category name="Logika" colour="210">
+            <block type="controls_if"></block>
+            <block type="logic_compare"></block>
+            <block type="logic_operation"></block>
+            <block type="logic_boolean"></block>
+        </category>
+        <category name="Ciklusok" colour="120">
+            <block type="controls_repeat_ext">
+                <value name="TIMES">
+                    <shadow type="math_number">
+                        <field name="NUM">10</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="controls_whileUntil"></block>
+        </category>
+        <category name="Matematika" colour="230">
+            <block type="math_number"></block>
+            <block type="math_arithmetic"></block>
+        </category>
+        <category name="Szöveg" colour="160">
+            <block type="text"></block>
+            <block type="text_print"></block>
+            <block type="text_prompt_ext">
+                <value name="TEXT">
+                    <shadow type="text">
+                        <field name="TEXT">Kérek egy adatot:</field>
+                    </shadow>
+                </value>
+            </block>
+        </category>
+        <category name="Változók" colour="330" custom="VARIABLE"></category>
+    </xml>
+
+    <script>
+        // 1. Blockly felület inicializálása
+        const workspace = Blockly.inject('blocklyDiv', {
+            toolbox: document.getElementById('toolbox'),
+            trashcan: true, // Szemeteskuka ikon
+            grid: {
+                spacing: 20,
+                length: 3,
+                colour: '#ccc',
+                snap: true
+            }
+        });
+
+        // 2. Python kód frissítő függvény
+        function updatePythonCode() {
+            // Kompatibilitás biztosítása a Blockly különböző verzióihoz
+            const generator = Blockly.Python || python.pythonGenerator;
+            
+            // Kód legenerálása a blokkokból
+            const code = generator.workspaceToCode(workspace);
+            
+            // Beírás a jobb oldali szövegdobozba
+            document.getElementById('pythonCode').value = code;
+        }
+
+        // 3. Eseményfigyelő hozzáadása: minden blokk módosításnál lefut
+        workspace.addChangeListener(updatePythonCode);
+    </script>
+
+</body>
+</html>

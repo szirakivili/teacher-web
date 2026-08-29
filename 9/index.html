@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>9. osztály - SzV::KZMK</title>
+    <link rel="stylesheet" href="../theme.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="../favicon.ico" type="image/x-icon">
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- Vissza gomb -->
+        <a href=".." class="back-btn">
+            <span class="back-arrow">&lt;</span> Vissza
+        </a>
+
+        <h1 class="header-title">9. osztály</h1>
+        <p class="header-subtitle">Tananyagok és feladatok</p>
+
+        <!-- Kártyák / Csempék a kezdőlaphoz hasonlóan -->
+        <div class="card-grid">
+            <!-- Pontszám Lekérdező -->
+            <a href="javascript:void(0)" id="openQueryBtn" class="card grade-9">
+                <div class="icon">🎯</div>
+                <h2 class="card-title">Pontszám lekérdező</h2>
+                <p class="card-desc">Nézd meg a +/- pontjaidat</p>
+            </a>
+
+            <!-- Google Classroom 1 -->
+            <a href="https://classroom.google.com/c/ODc2MzI3MjMyNzAx" target="_blank" class="card grade-9">
+                <div class="icon">🎓</div>
+                <h2 class="card-title">Google Classroom 1</h2>
+                <p class="card-desc">Kedd-pénteki csoport</p>
+            </a>
+
+            <!-- Google Classroom 2 -->
+            <a href="https://classroom.google.com/c/ODc2MzI3Mzg2NjYw" target="_blank" class="card grade-9">
+                <div class="icon">🎓</div>
+                <h2 class="card-title">Google Classroom 2</h2>
+                <p class="card-desc">Szerda-pénteki csoport</p>
+            </a>
+
+            <!-- Okostankönyv -->
+            <a href="https://www.nkp.hu/tankonyv/digitalis_kultura_9_nat2020/" target="_blank" class="card grade-9">
+                <div class="icon">📖</div>
+                <h2 class="card-title">Okostankönyv</h2>
+                <p class="card-desc">Digitális tananyagok</p>
+            </a>
+
+            <!-- Középszintű érettségi feladatok -->
+            <a href="http://informatika.fazekas.hu/erettsegi/kozepszintu-feladatok/" target="_blank" class="card grade-9">
+                <div class="icon">💻</div>
+                <h2 class="card-title">Középszintű érettségi feladatok</h2>
+                <p class="card-desc">Évek és témakörök szerint</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- Pontszám Lekérdező Modal -->
+    <div id="queryModal" class="modal">
+        <div class="modal-content modal-body">
+            <span class="close-btn" id="closeQueryModal">&times;</span>
+            <h2 style="text-align: center; margin-bottom: 20px; color: var(--text-white);">+/- pontszám lekérdezése</h2>
+            
+            <form id="queryForm">
+                <div class="form-group">
+                    <input type="text" id="omInput" name="om" maxlength="11" placeholder="OM azonosító" required>
+                </div>
+                <button type="submit" class="btn-query" style="width: 100%;">Lekérdezés</button>
+            </form>
+
+            <!-- Eredmény Megjelenítő -->
+            <div id="resultContainer" style="display: none;">
+                <div id="scoreDisplay" class="huge-score">0</div>
+                <div id="nameDisplay" class="student-name">Név</div>
+                
+                <div class="scale-wrapper">
+                    <div class="scale-labels">
+                        <span style="color: var(--color-robotics);">elégtelen</span>
+                        <span style="color: var(--color-grade-10);">jeles</span>
+                    </div>
+                    <div class="scale-bar">
+                        <div id="scaleMarker" class="scale-marker"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Hibaüzenet doboz -->
+            <p id="errorMsg" style="color: var(--color-robotics); font-weight: bold; margin-top: 15px; display: none;"></p>
+        </div>
+    </div>
+
+    <script>
+        /* =========================================
+           PONTSZÁM LEKÉRDEZŐ LOGIKA
+           ========================================= */
+        const queryModal = document.getElementById('queryModal');
+        const openQueryBtn = document.getElementById('openQueryBtn');
+        const closeQueryModal = document.getElementById('closeQueryModal');
+        const queryForm = document.getElementById('queryForm');
+        const errorMsg = document.getElementById('errorMsg');
+        
+        openQueryBtn.onclick = (e) => { 
+            e.preventDefault();
+            queryModal.style.display = "flex"; 
+            document.getElementById('resultContainer').style.display = 'none';
+            errorMsg.style.display = 'none';
+            queryForm.style.display = 'block';
+            document.getElementById('omInput').value = '';
+        }
+        closeQueryModal.onclick = () => { queryModal.style.display = "none"; }
+        window.onclick = (event) => { if (event.target === queryModal) queryModal.style.display = "none"; }
+
+        function getColorForScore(score) {
+            if (score <= -3) return "var(--color-robotics)"; 
+            if (score >= -2 && score <= -1) return "#fbbf24"; 
+            if (score >= 0 && score <= 2) return "var(--color-grade-9)"; 
+            if (score >= 3) return "var(--color-grade-10)"; 
+            return "var(--text-white)";
+        }
+
+        queryForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const omId = document.getElementById('omInput').value.trim();
+            const submitBtn = queryForm.querySelector('button[type="submit"]');
+            const resultContainer = document.getElementById('resultContainer');
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            const nameDisplay = document.getElementById('nameDisplay');
+            const scaleMarker = document.getElementById('scaleMarker');
+
+            if (!/^7[0-9]{10}$/.test(omId)) {
+                errorMsg.innerText = "hibás formátum";
+                errorMsg.style.display = 'block';
+                return; 
+            }
+
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbwErLNZ2gQLQfR773OTwty5i-ULUDzqY3MwZN5nLOlqk5XrmnsEG9dGh8dJBu7f0y_F/exec'; 
+
+            submitBtn.innerText = 'Keresés...';
+            submitBtn.disabled = true;
+            errorMsg.style.display = 'none';
+
+            fetch(`${scriptUrl}?om=${omId}&osztaly=9`)
+                .then(response => response.json())
+                .then(data => {
+                    submitBtn.innerText = 'Lekérdezés';
+                    submitBtn.disabled = false;
+                    
+                    if (data.success) {
+                        queryForm.style.display = 'none'; 
+                        resultContainer.style.display = 'block'; 
+                        
+                        const score = parseInt(data.pont, 10) || 0;
+                        const finalScore = score > 5 ? 5 : (score < -5 ? -5 : score); 
+                        
+                        scoreDisplay.innerText = finalScore > 0 ? `+${finalScore}` : finalScore;
+                        scoreDisplay.style.color = getColorForScore(finalScore);
+                        nameDisplay.innerText = data.nev;
+
+                        const percentage = ((finalScore + 5) / 10) * 100;
+                        
+                        setTimeout(() => {
+                            scaleMarker.style.left = `${percentage}%`;
+                            scaleMarker.style.borderColor = getColorForScore(finalScore);
+                        }, 100);
+
+                    } else {
+                        errorMsg.innerText = data.message;
+                        errorMsg.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    submitBtn.innerText = 'Lekérdezés';
+                    submitBtn.disabled = false;
+                    errorMsg.innerText = "Hálózati hiba.";
+                    errorMsg.style.display = 'block';
+                });
+        });
+    </script>
+</body>
+</html>
