@@ -122,10 +122,10 @@
         window.onclick = (event) => { if (event.target === queryModal) queryModal.style.display = "none"; }
 
         function getColorForScore(score) {
-            if (score <= -3) return "var(--color-robotics)"; 
-            if (score >= -2 && score <= -1) return "#fbbf24"; 
-            if (score >= 0 && score <= 2) return "var(--color-grade-9)"; 
-            if (score >= 3) return "var(--color-grade-10)"; 
+            if (score <= -2) return "var(--color-robotics)"; 
+            if (score == -1) return "#fbbf24"; 
+            if (score >= 0 && score <= 1) return "var(--color-grade-9)"; 
+            if (score >= 2) return "var(--color-grade-10)"; 
             return "var(--text-white)";
         }
 
@@ -162,13 +162,13 @@
                         resultContainer.style.display = 'block'; 
                         
                         const score = parseInt(data.pont, 10) || 0;
-                        const finalScore = score > 5 ? 5 : (score < -5 ? -5 : score); 
+                        const finalScore = score > 3 ? 3 : (score < -3 ? -3 : score); 
                         
                         scoreDisplay.innerText = finalScore > 0 ? `+${finalScore}` : finalScore;
                         scoreDisplay.style.color = getColorForScore(finalScore);
                         nameDisplay.innerText = data.nev;
 
-                        const percentage = ((finalScore + 5) / 10) * 100;
+                        const percentage = ((finalScore + 3) / 6) * 100;
                         
                         setTimeout(() => {
                             scaleMarker.style.left = `${percentage}%`;
