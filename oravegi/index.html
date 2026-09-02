@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Óra végi kérdés - SzV::KZMK</title>
+    <link rel="shortcut icon" href="../favicon.ico" type="image/x-icon">
+    
+    <link rel="stylesheet" href="../theme.css"> 
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        
+        <div id="start-screen">
+            <h1 class="header-title">Óra végi kérdés</h1>
+            <p class="header-subtitle">A mai órán elhangzottakból</p>
+            <div class="info-box-alert">
+                ⚠️ A felület teljes képernyőn fut. Ha megpróbálod elhagyni az oldalt, <strong>a válaszod azonnal beküldésre kerül!</strong>
+            </div>
+            <button id="start-btn" class="btn-primary" style="background-color: var(--color-grade-10);">Kezdés</button>
+        </div>
+
+        <div id="loading-indicator">
+            <div class="content-card">
+                <div class="loader"></div>
+                <p style="margin-top: 15px; font-size: 1.2rem; text-align: center;">Kérdés betöltése...</p>
+                <div id="error-msg" style="color: var(--color-robotics); margin-top: 15px; display: none; font-weight: bold;"></div>
+            </div>
+        </div>
+
+        <div id="email-screen">
+            <div class="content-card">
+                <h2 style="color: var(--color-grade-9); margin-bottom: 25px;">Email cím</h2>
+                <div class="form-group">
+                    <label for="student-email">Add meg a sulis email címed:</label>
+                    <input type="email" id="student-email" placeholder="pelda@kzmk.hu" autocomplete="off">
+                    <div id="email-error-msg"></div>
+                </div>
+                <button id="email-btn" class="btn-primary">Tovább a kérdéshez</button>
+            </div>
+        </div>
+
+        <div id="quiz-container">
+            <div class="content-card">
+                <h2 style="color: var(--color-grade-10); margin-bottom: 25px;">Óra végi kérdés</h2>
+                <form id="quiz-form">
+                    <div class="form-group">
+                        <label id="question-label" for="answer-input">Kérdés helye...</label>
+                        <textarea id="answer-input" placeholder="Ide írd a válaszod..."></textarea>
+                    </div>
+                    <button type="button" id="submit-btn" class="btn-primary" style="margin-top: 10px;">Kész, beküldöm!</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="result-screen"></div>
+
+    </div>
+
+    <script>
+        // IDE ILLESZD BE AZ APPS SCRIPT WEBALKALMAZÁS LINKJÉT!
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-QO42pDT6aR_jSK2EQio1zFTw9q-RJZ0u5-3M2QIQ1m2m9xQYAFFGuRtJmvp3bHiq9A/exec';
+
+        let quizActive = false;
+        let isSubmitting = false;
+        let loadedQuestion = "";
+        let studentEmail = "";
+
+        const screens = {
+            start: document.getElementById('start-screen'),
+            loading: document.getElementById('loading-indicator'),
+            email: document.getElementById('email-screen'),
+            quiz: document.getElementById('quiz-container'),
+            result: document.getElementById('result-screen')
+        };
+        const errorMsg = document.getElementById('error-msg');
+        const emailErrorMsg = document.getElementById('email-error-msg');
+
+        function showScreen(screenName) {
+            Object.values(screens).forEach(s => s.style.display = 'none');
+            screens[screenName].style.display = 'block';
+        }
+
+        // --- 1. Indítás és Kérdés lekérése ---
+        document.getElementById('start-btn').addEventListener('click', () => {
+            document.documentElement.requestFullscreen().then(() => {
+                showScreen('loading');
+                // FIGYELEM: A quizActive = true; innen kikerült!
+                // Csak akkor aktiváljuk a védelmet, ha már a kérdésnél jár.
+                
+                fetch(APPS_SCRIPT_URL)
+                    .then(response => response.text())
+                    .then(text => {
+                        if(text.includes("Hiba:")) {
+                            errorMsg.innerText = text;
+                            errorMsg.style.display = 'block';
+                        } else {
+                            loadedQuestion = text;
+                            document.getElementById('question-label').innerText = loadedQuestion;
+                            showScreen('email');
+                            document.getElementById('student-email').focus();
+                        }
+                    })
+                    .catch(error => {
+                        errorMsg.innerText = "Hálózati hiba történt a kérdés betöltése során.";
+                        errorMsg.style.display = 'block';
+                    });
+            }).catch((err) => {
+                alert(`Hiba a teljes képernyő megnyitásakor. Kérlek, engedélyezd a böngésződben!`);
+            });
+        });
+
+        // --- 2. Email megadása (Fókuszvesztés nélkül, inline hibával) ---
+        const emailBtn = document.getElementById('email-btn');
+        const emailInput = document.getElementById('student-email');
+
+        emailBtn.addEventListener('click', proceedToQuestion);
+
+        emailInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                proceedToQuestion();
+            }
+        });
+
+        function proceedToQuestion() {
+            studentEmail = emailInput.value.trim();
+            emailErrorMsg.style.display = 'none'; // Hibajelzés alaphelyzetbe állítása
+            
+            if (!studentEmail) {
+                emailErrorMsg.innerText = "Kérlek, add meg az email címed!";
+                emailErrorMsg.style.display = 'block';
+                return;
+            }
+            // Szigorú @kzmk.hu végződés ellenőrzése
+            if (!studentEmail.endsWith('@kzmk.hu')) {
+                emailErrorMsg.innerText = "Kizárólag iskolai email címet használhatsz!";
+                emailErrorMsg.style.display = 'block';
+                return;
+            }
+
+            showScreen('quiz');
+            document.getElementById('answer-input').focus();
+            
+            quizActive = true; 
+        }
+
+        // --- 3. Beküldés (Adatok elküldése - POST) ---
+        function submitQuiz(reason, isPenalty = false) {
+            if (!quizActive || isSubmitting) return;
+            isSubmitting = true; 
+            quizActive = false;
+            
+            const answerText = document.getElementById('answer-input').value.trim();
+            const statusText = isPenalty ? "szabálytalan" : "szabályos";
+
+            const submitData = {
+                email: studentEmail || "-",
+                valasz: answerText || "[Üresen hagyott válasz]",
+                statusz: statusText
+            };
+            
+            fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                body: JSON.stringify(submitData),
+                keepalive: true 
+            }).then(res => res.json())
+              .then(data => {
+                  if(data.error) console.error("Script hiba: ", data.error);
+              })
+              .catch(err => console.error(err));
+
+            if (isPenalty && reason !== 'Böngésző fül bezárása') {
+                alert("A rendszer szabályszegést észlelt (" + reason + "), ezért a válaszodat automatikusan beküldtük!");
+            }
+
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(err => console.log(err));
+            }
+
+            let resultHtml = '';
+            if (isPenalty) {
+                resultHtml = `
+                    <div class="content-card" style="border-top: 5px solid var(--color-robotics);">
+                        <h2 style="color: var(--color-robotics); margin-bottom: 15px;">Lezárva!</h2>
+                        <p style="margin-bottom: 10px;">A válaszodat a rendszer automatikusan beküldte:</p>
+                        <p style="color: var(--color-robotics); font-weight: bold; font-size: 1.1rem; margin-bottom: 20px;">${reason}</p>
+                    </div>`;
+            } else {
+                resultHtml = `
+                    <div class="content-card" style="border-top: 5px solid var(--color-grade-10);">
+                        <h2 style="color: var(--color-grade-10); margin-bottom: 10px;">Beküldve!</h2>
+                        <p style="color: var(--text-muted); margin-bottom: 20px;">A válaszodat rögzítettük és elküldtük neked emailben.</p>
+                    </div>`;
+            }
+
+            screens.result.innerHTML = resultHtml;
+            showScreen('result');
+            
+            setTimeout(() => { isSubmitting = false; }, 500);
+        }
+
+        document.getElementById('submit-btn').addEventListener('click', () => { 
+            submitQuiz('Beküldés gombra kattintás', false); 
+        });
+
+        // --- 4. Csalásvédelem (Csak quizActive = true esetén futnak le) ---
+        window.addEventListener('beforeunload', (e) => {
+            if (quizActive && !isSubmitting) {
+                submitQuiz('Böngésző fül bezárása', true);
+                e.preventDefault();
+                e.returnValue = ''; 
+            }
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden' && quizActive && !isSubmitting) {
+                submitQuiz('Másik fülre/alkalmazásba váltás', true);
+            }
+        });
+
+        window.addEventListener('blur', () => {
+            if (quizActive && !isSubmitting) {
+                submitQuiz('Fókusz elvesztése (Tálcára rakás/Alt+Tab/Felugró ablak)', true);
+            }
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement && quizActive && !isSubmitting) {
+                submitQuiz('Kilépés a teljes képernyőből (ESC)', true);
+            }
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.altKey && (e.key === 'F4' || e.keyCode === 115)) {
+                if (quizActive && !isSubmitting) {
+                    e.preventDefault(); 
+                    confirm("Figyelem! Megpróbáltad bezárni az ablakot (Alt+F4). A válaszodat automatikusan beküldjük!");
+                    submitQuiz('Erőszakos bezárás', true);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
