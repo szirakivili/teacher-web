@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imagine Logo Parancsok - SzV&VCs::KZMK</title>
+    <link rel="stylesheet" href="/theme.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+</head>
+<body>
+
+    <div class="container text-page">
+        
+        <!-- Vissza gomb -->
+        <a href="javascript:history.back()" class="back-btn">
+            <span class="back-arrow">&lt;</span> Vissza
+        </a>
+
+        <!-- Tartalom kártya -->
+        <div class="content-card tisztaszoftver-card">
+            
+            <div class="card-header">
+                <div class="icon">🐢</div>
+                <h2>Imagine Logo - Alapvető parancsok</h2>
+            </div>
+
+            <p class="card-text">
+                Az alábbiakban az Imagine Logo legfontosabb utasításait találod. A <span style="color: var(--color-contact); font-style: italic;">narancssárgával</span> jelölt részek a változtatható paraméterek (számok, színek, utasítások), amiket te adhatsz meg.
+            </p>
+
+            <h3 class="section-title">Mozgás és fordulás</h3>
+            <div class="step-list">
+                <div class="step-item">
+                    <div class="step-content">
+                        <h4>Előre és Hátra</h4>
+                        <p>A teknőc a megadott lépésszámmal mozog.</p>
+                        <div class="cmd-box">
+                            <span class="cmd-name">előre</span> <span class="cmd-param">lépésszám</span> &nbsp;|&nbsp; <span class="cmd-name">e</span> <span class="cmd-param">lépésszám</span>
+                        </div>
+                        <div class="cmd-box">
+                            <span class="cmd-name">hátra</span> <span class="cmd-param">lépésszám</span> &nbsp;|&nbsp; <span class="cmd-name">h</span> <span class="cmd-param">lépésszám</span>
+                        </div>
+                        <span class="cmd-example">Példa: <span class="cmd-inline">e 100</span> (előre 100 lépést)</span>
+                    </div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-content">
+                        <h4>Fordulás és Irány</h4>
+                        <p>Jobbra vagy balra fordulás a jelenlegi irányhoz képest, illetve egy abszolút szög (irány) beállítása (ahol 0 a felfelé).</p>
+                        <div class="cmd-box">
+                            <span class="cmd-name">jobbra</span> <span class="cmd-param">fok</span> &nbsp;|&nbsp; <span class="cmd-name">j</span> <span class="cmd-param">fok</span>
+                        </div>
+                        <div class="cmd-box">
+                            <span class="cmd-name">balra</span> <span class="cmd-param">fok</span> &nbsp;|&nbsp; <span class="cmd-name">b</span> <span class="cmd-param">fok</span>
+                        </div>
+                        <div class="cmd-box">
+                            <span class="cmd-name">irány!</span> <span class="cmd-param">fok</span>
+                        </div>
+                        <span class="cmd-example">Példa: <span class="cmd-inline">j 90</span> (derékszögű fordulás jobbra), <span class="cmd-inline">irány! 180</span> (lefelé néz)</span>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="section-title">Tollkezelés és Rajzolás</h3>
+            <div class="step-list">
+                <div class="step-item">
+                    <div class="step-content">
+                        <h4>Toll felemelése és letétele</h4>
+                        <p>Ha a toll fent van, a teknőc csak mozog, de nem hagy nyomot.</p>
+                        <div class="cmd-box">
+                            <span class="cmd-name">tollatfel</span> &nbsp;|&nbsp; <span class="cmd-name">tf</span>
+                        </div>
+                        <div class="cmd-box">
+                            <span class="cmd-name">tollatle</span> &nbsp;|&nbsp; <span class="cmd-name">tl</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-content">
+                        <h4>Színek és Vastagság</h4>
+                        <p>A felkiáltójel (!) fontos, mert egy értéket állítunk be vele! A színeket megadhatod számkóddal, vagy idézőjellel kezdődő szöveggel.</p>
+                        <div class="cmd-box">
+                            <span class="cmd-name">tollszín!</span> <span class="cmd-param">szín</span> &nbsp;|&nbsp; <span class="cmd-name">tsz!</span> <span class="cmd-param">szín</span>
+                        </div>
+                        <div class="cmd-box">
+                            <span class="cmd-name">háttérszín!</span> <span class="cmd-param">szín</span> &nbsp;|&nbsp; <span class="cmd-name">hsz!</span> <span class="cmd-param">szín</span>
+                        </div>
+                        <div class="cmd-box">
+                            <span class="cmd-name">tollvastagság!</span> <span class="cmd-param">vastagság</span> &nbsp;|&nbsp; <span class="cmd-name">tv!</span> <span class="cmd-param">vastagság</span>
+                        </div>
+                        <span class="cmd-example">
+                            Szöveges szín példa (idézőjellel az elején): <span class="cmd-inline">tsz! "piros</span> vagy <span class="cmd-inline">hsz! "világoskék</span><br>
+                            Vastagság példa: <span class="cmd-inline">tv! 5</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-content">
+                        <h4>Pont rajzolása</h4>
+                        <p>Egyetlen pontot rajzol az aktuális helyre a beállított vastagsággal és színnel.</p>
+                        <div class="cmd-box">
+                            <span class="cmd-name">pont</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="section-title">Vezérlés és Képernyő</h3>
+            <div class="step-list">
+                <div class="step-item">
+                    <div class="step-content">
+                        <h4>Ismétlés</h4>
+                        <p>A szögletes zárójelben lévő utasításokat többször végrehajtja.</p>
+                        <div class="cmd-box">
+                            <span class="cmd-name">ismétlés</span> <span class="cmd-param">hányszor</span> [ <span class="cmd-param">utasítások</span> ] &nbsp;|&nbsp; <span class="cmd-name">ism</span> <span class="cmd-param">hányszor</span> [ <span class="cmd-param">utasítások</span> ]
+                        </div>
+                        <span class="cmd-example">Példa négyzetre: <span class="cmd-inline">ism 4 [e 100 j 90]</span></span>
+                    </div>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-content">
+                        <h4>Képernyő törlése</h4>
+                        <p>Letörli a rajzlapot és a teknőcöt visszaviszi középre.</p>
+                        <div class="cmd-box">
+                            <span class="cmd-name">törlőképernyő</span> &nbsp;|&nbsp; <span class="cmd-name">törölkép</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Eljárások külön szekciója -->
+            <h3 class="section-title">Eljárások (Saját parancsok)</h3>
+            <div class="info-box">
+                Ezzel a módszerrel a teknőcöt új szavakra taníthatjuk. Több parancsot összefoghatunk egyetlen saját név alá, és ezeket rugalmassá is tehetjük paraméterekkel.
+            </div>
+            
+            <div class="step-list">
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Egyszerű eljárás létrehozása</h4>
+                        <p>Az eljárást az <code>eljárás</code> szóval és egy tetszőleges névvel kezdjük, és a <code>vége</code> szóval zárjuk.</p>
+                        <div class="cmd-box">
+                            <span class="cmd-name">eljárás</span> <span class="cmd-param">sajátnév</span><br>
+                            &nbsp;&nbsp;<span class="cmd-param">utasítások...</span><br>
+                            <span class="cmd-name">vége</span>
+                        </div>
+                        <span class="cmd-example">
+                            Például (fix méretű négyzet):<br>
+                            <span class="cmd-inline">eljárás négyzet</span><br>
+                            <span class="cmd-inline">&nbsp;&nbsp;ism 4 [e 100 j 90]</span><br>
+                            <span class="cmd-inline">vége</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Eljárás paraméterrel</h4>
+                        <p>Ha azt szeretnénk, hogy az alakzatunk ne mindig ugyanakkora legyen, <strong>paramétert</strong> használhatunk. Ezt a név után írjuk, és egy <strong>kettősponttal ( : )</strong> kezdjük.</p>
+                        <div class="cmd-box">
+                            <span class="cmd-name">eljárás</span> <span class="cmd-param">sajátnév</span> :<span class="cmd-param">változó</span><br>
+                            &nbsp;&nbsp;<span class="cmd-param">utasítások...</span><br>
+                            <span class="cmd-name">vége</span>
+                        </div>
+                        <span class="cmd-example">
+                            Például egy szabadon változtatható méretű négyzet:<br>
+                            <span class="cmd-inline">eljárás négyzet :méret</span><br>
+                            <span class="cmd-inline">&nbsp;&nbsp;ism 4 [e :méret j 90]</span><br>
+                            <span class="cmd-inline">vége</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Eljárás használata</h4>
+                        <p>Ha kész, a nevét (és ha van, a paraméterét) a parancssorba írva meghívhatjuk.</p>
+                        <div class="cmd-box">
+                            <span class="cmd-name">négyzet</span> <span class="cmd-param">50</span>
+                        </div>
+                        <span class="cmd-example">A teknőc rajzol egy 50-es oldalhosszúságú négyzetet.</span>
+                    </div>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Meglévő eljárások módosítása</h4>
+                        <p>Ha hibáztál, vagy javítani szeretnéd a már létrehozott eljárásodat, kétféleképpen teheted meg:</p>
+                        
+                        <ul class="custom-list">
+                            <li><strong>A menüből:</strong> Jelenítsd meg az intézőt az <strong>F4 gomb</strong> megnyomásával, majd az <i>Eljárások</i> részt lenyitva kattints duplán a szerkeszteni/törölni kívánt eljáráson.</li>
+                            <li><strong>A parancssorból:</strong> Írd be a <i>szerkeszt</i> (röviden <i>szerk</i>) parancsot, majd <strong>idézőjellel</strong> a módosítani kívánt eljárás nevét. Ekkor egyből felugrik a szerkesztő ablak.</li>
+                        </ul>
+                        <div class="cmd-box" style="margin-top: 10px;">
+                            <span class="cmd-name">szerkeszt</span> <span class="cmd-param">"négyzet</span> &nbsp;|&nbsp; <span class="cmd-name">szerk</span> <span class="cmd-param">"négyzet</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

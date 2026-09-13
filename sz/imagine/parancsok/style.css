@@ -1,0 +1,51 @@
+.cmd-box {
+    font-family: 'Consolas', 'Courier New', monospace;
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    display: inline-block;
+    margin: 4px 0;
+    color: #e2e8f0;
+    font-size: 1.05rem;
+}
+
+.cmd-name {
+    color: var(--color-kzmk); /* Ciánkék a parancs kulcsszavának */
+    font-weight: bold;
+}
+
+.cmd-param {
+    color: var(--color-contact); /* Narancssárga a változtatható paraméternek */
+    font-style: italic;
+}
+
+.cmd-example {
+    display: block;
+    margin-top: 8px;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.cmd-inline {
+    font-family: 'Consolas', 'Courier New', monospace;
+    color: var(--color-kzmk);
+}
+
+/* Szépített lista a leírásokhoz */
+.custom-list {
+    margin-top: 8px;
+    margin-left: 20px;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.custom-list li {
+    margin-bottom: 6px;
+}
+
+.custom-list strong {
+    color: var(--text-main);
+}
