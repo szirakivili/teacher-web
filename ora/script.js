@@ -135,4 +135,24 @@ function updateTimer() {
 }
 
 setInterval(updateTimer, 1000);
-updateTimer(); 
+updateTimer();
+
+// --- Képernyő ébrentartása (Wake Lock API) ---
+let wakeLock = null;
+
+async function requestWakeLock() {
+    try {
+        if ('wakeLock' in navigator) {
+            wakeLock = await navigator.wakeLock.request('screen');
+        }
+    } catch (err) {
+        console.error(`Nem sikerült ébrentartani a képernyőt: ${err.name}, ${err.message}`);
+    }
+}
+
+requestWakeLock();
+document.addEventListener('visibilitychange', async () => {
+    if (wakeLock !== null && document.visibilityState === 'visible') {
+        requestWakeLock();
+    }
+});
