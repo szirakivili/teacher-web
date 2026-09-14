@@ -1,0 +1,58 @@
+body {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.timer-card {
+    text-align: center;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 250px;
+}
+
+.status-text {
+    font-size: 2rem;
+    color: var(--text-white);
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.timer-display {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 9rem;
+    font-weight: 900;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1;
+    color: var(--color-kzmk); 
+    text-shadow: 0 0 20px rgba(21, 250, 219, 0.4);
+    transition: color 0.5s ease, text-shadow 0.5s ease;
+}
+
+.time-part {
+    width: 2.2ch; 
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.colon {
+    width: 0.6ch;
+    text-align: center;
+    padding-bottom: 0.1em;
+    opacity: 0.9;
+}
+
+@media (max-width: 480px) {
+    .timer-display {
+        font-size: 5.5rem;
+    }
+    .status-text {
+        font-size: 1.5rem;
+    }
+}
