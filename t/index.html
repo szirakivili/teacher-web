@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sziráki Vilmos - KZMK</title>
+    <link rel="stylesheet" href="/theme.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="header-title">Üdv az oldalamon!</h1>
+        <p class="header-subtitle">Válaszd ki, hova szeretnél továbblépni!</p>
+
+        <div class="card-grid">
+            <!-- Diákok oldala -->
+            <a href="/" target="_blank" class="card grade-9">
+                <div class="icon">📚</div>
+                <h2 class="card-title">Diákok oldala</h2>
+                <p class="card-desc">Tanulók számára elérhető</p>
+            </a>
+
+            <!-- Csengetési rend -->
+            <a href="./ora/" target="_blank" class="card grade-10">
+                <div class="icon">🔔</div>
+                <h2 class="card-title">Csengetési rend</h2>
+                <p class="card-desc">Tanórák és szünetek</p>
+            </a>
+
+            <!-- Ebéd -->
+            <a href="./ebed/" target="_blank" class="card robotics">
+                <div class="icon">🍴</div>
+                <h2 class="card-title">Ebédelők listája</h2>
+                <p class="card-desc">Osztály szerinti névsorok</p>
+            </a>
+
+            <!-- Elérhetőségek -->
+            <div id="contactBtn" class="card contact" style="cursor: pointer;">
+                <div class="icon">📧</div>
+                <h2 class="card-title">Elérhetőségek</h2>
+                <p class="card-desc">Emailen és személyesen</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Felugró ablak (Modal) a kapcsolati adatoknak -->
+    <div id="contactModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Elérhetőségek</h2>
+            <div class="contact-info">
+                <p><strong>E-mail</strong><a href="mailto:sziraki.vilmos@kzmk.hu" target="_blank" class="email">sziraki.vilmos@kzmk.hu</a></p>
+                <p>
+                    <strong>Személyesen az iskolában (kb)</strong>
+                    <b>Kedden</b> 9:30-11:30<br>
+                    <b>Szerdán</b> 9:30-11:30 & 14:30-16:00<br>
+                    <b>Pénteken</b> 12:30-14:10
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript a modal működéséhez -->
+    <script>
+        // Elemek lekérése
+        const modal = document.getElementById("contactModal");
+        const btn = document.getElementById("contactBtn");
+        const span = document.querySelector(".close-btn");
+
+        // Easter Egg elemek lekérése
+        const eeModal = document.getElementById("easterEggModal");
+        const eeBtn = document.getElementById("easterEggBtn");
+        const eeSpan = document.getElementById("closeEasterEgg");
+
+        // Gomb kattintásra megnyílik az ablak
+        btn.onclick = function() {
+            modal.style.display = "flex";
+        }
+
+        // X-re kattintva bezárul
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // Ha a felhasználó a modalon (szürke hátteren) kívülre kattint, akkor is bezárul
+        window.onclick = function(event) {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        // Gomb kattintásra megnyílik az ablak
+        eeBtn.onclick = function() {
+            eeModal.style.display = "flex";
+        }
+
+        // X-re kattintva bezárul
+        eeSpan.onclick = function() {
+            eeModal.style.display = "none";
+        }
+
+        // Ablakon kívüli kattintás kezelése az új modalhoz
+        window.addEventListener("click", function(event) {
+            if (event.target === eeModal) {
+                eeModal.style.display = "none";
+            }
+        });
+    </script>
+
+</body>
+</html>
