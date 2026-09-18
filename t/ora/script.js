@@ -19,7 +19,7 @@ const scheduleFriday = [
     { id: 2, start: "09:00", end: "09:40" },
     { id: 3, start: "09:55", end: "10:35" },
     { id: 4, start: "10:45", end: "11:25" },
-    { id: 5, start: "11:35", end: "12:15" },
+    { id: 5, start: "11:35", end: "12:25" },
     { id: 6, start: "12:35", end: "13:15" },
     { id: 7, start: "13:25", end: "14:05" },
     { id: 8, start: "14:15", end: "14:55" },
