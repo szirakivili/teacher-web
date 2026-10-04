@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="hu" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KZMK Színtér</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header class="header">
+        <div class="header-container">
+            
+            <!-- Tisztán HTML/CSS alapú logó (Nincs neon, c-base adaptív) -->
+            <div class="logo" onclick="switchTab('kezdolap')" title="Ugrás a Kezdőlapra">
+                <div class="logo-row-1">KZMK</div>
+                <div class="logo-row-2">
+                    <span class="c-teal">S</span><span class="c-coral">z</span><span class="c-yellow">í</span><span class="c-cyan">n</span><span class="c-base">t</span><span class="c-purple">é</span><span class="c-darkblue">r</span>
+                </div>
+                <div class="logo-row-3">kreatív &bull; közösség &bull; alkotás</div>
+            </div>
+
+            <nav>
+                <button class="hamburger" id="hamburger" aria-label="Menü megnyitása">
+                    <i class="fa-solid fa-bars" id="hamburger-icon"></i>
+                </button>
+                <ul class="nav-list" id="nav-list">
+                    <li>
+                        <button class="nav-link active" onclick="switchTab('kezdolap')" data-target="kezdolap">
+                            <i class="fa-solid fa-house"></i> Kezdőlap
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-link" onclick="switchTab('kepzomuveszet')" data-target="kepzomuveszet">
+                            <i class="fa-solid fa-palette"></i> Képzőművészeti alkotások
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-link" onclick="switchTab('promo')" data-target="promo">
+                            <i class="fa-solid fa-bullhorn"></i> Promó anyagok
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        
+        <!-- 1. Kezdőlap (Előadások) -->
+        <section id="kezdolap" class="tab-section active">
+            
+            <h2 class="section-title">Következő előadások</h2>
+            <div id="upcoming-list" class="poster-list">
+                <!-- Javascript tölti be -->
+            </div>
+
+            <h2 class="section-title">Legutóbbi előadások</h2>
+            <div id="past-list" class="poster-list">
+                <!-- Javascript tölti be -->
+            </div>
+
+        </section>
+
+        <!-- 2. Képzőművészeti alkotások -->
+        <section id="kepzomuveszet" class="tab-section">
+            <h2 class="section-title">Képzőművészeti alkotások</h2>
+            <div class="empty-message">
+                <i class="fa-solid fa-brush" style="font-size: 2rem; margin-bottom: 1rem; display: block; color: var(--color-purple);"></i>
+                Ez a szekció hamarosan feltöltésre kerül művészeti alkotásokkal.
+            </div>
+        </section>
+
+        <!-- 3. Promó anyagok -->
+        <section id="promo" class="tab-section">
+            <h2 class="section-title">Promó anyagok</h2>
+            <div class="empty-message">
+                <i class="fa-solid fa-download" style="font-size: 2rem; margin-bottom: 1rem; display: block; color: var(--color-cyan);"></i>
+                Itt lesznek megtalálhatók a letölthető plakátok és sajtóanyagok.
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        &copy; 2026 Kodály Zoltán Magyar Kórusiskola Színtér
+    </footer>
+
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Téma váltása">
+        <i class="fa-solid fa-sun icon-sun"></i>
+        <i class="fa-solid fa-moon icon-moon"></i>
+    </button>
+
+    <script>
+        // --- 1. MOCK ADATBÁZIS ---
+        
+        const upcomingData = []; 
+
+        const pastData = [
+            {
+                title: "Gaetano Donizetti: A Csengő",
+                date: "2026. szeptember 23.",
+                image: "plakatok/csengo_260923.jpg",
+                link: "https://www.youtube.com/watch?v=i5ZAQ0_eLas",
+                category: "Vígopera",
+                color: "var(--color-purple)"
+            },
+            {
+                title: "Jane Austen: Büszkeség és balítélet",
+                date: "2026. szeptermber 12.",
+                image: "plakatok/buszkesegesbalitelet_260912.jpg",
+                link: "",
+                category: "Színdarab",
+                color: "var(--color-yellow)"
+            },
+            {
+                title: "Molnár Ferenc: A Pál Utcai Fiúk",
+                date: "2026. június 25.",
+                image: "plakatok/palutcaifiuk_260625.jpg",
+                link: "https://drive.google.com/file/d/10DyR02H5PDrJYcrOMEbppN8pacnol2ov/view?usp=sharing",
+                category: "Musical",
+                color: "var(--color-teal)"
+            }
+        ];
+
+        // --- 2. RENDERELÉSI LOGIKA ---
+        function generateCardHTML(item) {
+            const hasLink = item.link && item.link.trim() !== "";
+            const Tag = hasLink ? 'a' : 'div';
+            const linkProps = hasLink ? `href="${item.link}" target="_blank" rel="noopener noreferrer"` : '';
+            // FontAwesome play ikon a gombba
+            const playBtn = hasLink ? `<div class="play-button" aria-label="Lejátszás"><i class="fa-solid fa-play"></i></div>` : '';
+            
+            return `
+                <${Tag} ${linkProps} class="poster-card">
+                    <span class="category-tag" style="background-color: ${item.color};">${item.category}</span>
+                    <div style="position: relative;">
+                        <img src="${item.image}" alt="${item.title}" class="poster-image">
+                        ${playBtn}
+                    </div>
+                    <div class="poster-info">
+                        <h3 class="poster-title">${item.title}</h3>
+                        <p class="poster-date"><i class="fa-regular fa-calendar-days" style="margin-right: 5px;"></i> ${item.date}</p>
+                    </div>
+                </${Tag}>
+            `;
+        }
+
+        function renderLists() {
+            const upContainer = document.getElementById('upcoming-list');
+            const pastContainer = document.getElementById('past-list');
+
+            if (upcomingData.length === 0) {
+                upContainer.innerHTML = `<div class="empty-message"><i class="fa-regular fa-calendar-xmark" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i> Jelenleg nincsenek következő előadások.</div>`;
+            } else {
+                upContainer.innerHTML = upcomingData.map(generateCardHTML).join('');
+            }
+
+            if (pastData.length === 0) {
+                pastContainer.innerHTML = `<div class="empty-message">Nincsenek elérhető korábbi előadások.</div>`;
+            } else {
+                pastContainer.innerHTML = pastData.map(generateCardHTML).join('');
+            }
+        }
+
+        // --- 3. NAVIGÁCIÓS LOGIKA (SPA) ---
+        function switchTab(targetId) {
+            document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(targetId).classList.add('active');
+            const activeBtn = document.querySelector(`.nav-link[data-target="${targetId}"]`);
+            if(activeBtn) activeBtn.classList.add('active');
+
+            // Mobil menü bezárása, ikon visszaállítása
+            const navList = document.getElementById('nav-list');
+            const hamburgerIcon = document.getElementById('hamburger-icon');
+            if(navList.classList.contains('open')) {
+                navList.classList.remove('open');
+                hamburgerIcon.classList.remove('fa-xmark');
+                hamburgerIcon.classList.add('fa-bars');
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Hamburger menü esemény
+        document.getElementById('hamburger').addEventListener('click', function() {
+            const navList = document.getElementById('nav-list');
+            const icon = document.getElementById('hamburger-icon');
+            
+            navList.classList.toggle('open');
+            if (navList.classList.contains('open')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-xmark');
+            } else {
+                icon.classList.remove('fa-xmark');
+                icon.classList.add('fa-bars');
+            }
+        });
+
+        // --- 4. TÉMA VÁLTÓ LOGIKA ---
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } else {
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (!localStorage.getItem('theme')) {
+                document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+            }
+        });
+
+        // --- INICIALIZÁLÁS ---
+        initTheme();
+        renderLists();
+
+    </script>
+</body>
+</html>

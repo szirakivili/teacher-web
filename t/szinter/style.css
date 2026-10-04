@@ -1,0 +1,367 @@
+:root {
+    /* Logó és kategória színek */
+    --color-teal: #12A57A;
+    --color-coral: #F26569;
+    --color-yellow: #F5AD33;
+    --color-cyan: #1ABFC4;
+    --color-purple: #8353A5;
+    --color-darkblue: #192176;
+    
+    /* Világos téma */
+    --bg-body: #f4f6f8;
+    --bg-surface: #ffffff;
+    --bg-header: rgba(255, 255, 255, 0.95);
+    --text-main: #000000;
+    --text-muted: #666666;
+    --border-color: #e0e0e0;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+[data-theme="dark"] {
+    /* Sötét téma */
+    --bg-body: #0d1117;
+    --bg-surface: #161b22;
+    --bg-header: rgba(13, 17, 23, 0.95);
+    --text-main: #ffffff; /* Fekete szövegek (pl. 't', KZMK) fehérek lesznek */
+    --text-muted: #8b949e;
+    --border-color: #30363d;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.5);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.7);
+    --color-darkblue: #5b65e2; /* Kicsit világosabb kék, hogy sötét alapon is látszódjon */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+a { text-decoration: none; color: inherit; }
+ul { list-style: none; }
+button { border: none; background: none; cursor: pointer; font-family: inherit; }
+
+.header {
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-header);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-color);
+    z-index: 100;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Logó Formázás */
+.logo {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+    user-select: none;
+    cursor: pointer;
+}
+
+.logo-row-1 {
+    font-size: 2.8rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    color: var(--text-main);
+    margin-bottom: -0.2rem;
+    transition: color 0.3s;
+}
+
+.logo-row-2 {
+    font-size: 4rem;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    margin-bottom: 0.3rem;
+    display: flex;
+}
+
+.logo-row-3 {
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--text-main);
+    transition: color 0.3s;
+}
+
+/* Logó Betűszínek */
+.c-teal { color: var(--color-teal); }
+.c-coral { color: var(--color-coral); }
+.c-yellow { color: var(--color-yellow); }
+.c-cyan { color: var(--color-cyan); }
+.c-base { color: var(--text-main); } /* A 't' betű alkalmazkodik a témához (fekete/fehér) */
+.c-purple { color: var(--color-purple); }
+.c-darkblue { color: var(--color-darkblue); }
+
+.nav-list {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-link {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    position: relative;
+    padding: 0.5rem 0;
+    transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background-color: var(--text-main);
+    transition: width 0.3s ease;
+    border-radius: 2px;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: var(--text-main);
+}
+
+.nav-link:hover::after, .nav-link.active::after {
+    width: 100%;
+}
+
+.hamburger {
+    display: none;
+    font-size: 1.8rem;
+    color: var(--text-main);
+    z-index: 101;
+    padding: 0.5rem;
+}
+
+@media (max-width: 900px) {
+    .header-container { flex-wrap: wrap; padding: 1rem; }
+    
+    .logo-row-1 { font-size: 1.8rem; }
+    .logo-row-2 { font-size: 2.5rem; }
+    .logo-row-3 { font-size: 0.65rem; }
+
+    .hamburger { display: block; }
+    
+    .nav-list {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: var(--bg-header);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border-color);
+        align-items: center;
+        gap: 1.5rem;
+        overflow: hidden;
+        max-height: 0;
+        padding: 0;
+        transition: max-height 0.3s ease, padding 0.3s ease;
+    }
+
+    .nav-list.open {
+        max-height: 400px;
+        padding: 2rem 0;
+    }
+}
+
+.main-content {
+    flex: 1;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+}
+
+.tab-section {
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+.tab-section.active { display: block; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.section-title {
+    font-size: 2.2rem;
+    font-weight: 900;
+    margin-bottom: 2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 3px solid var(--border-color);
+}
+
+.empty-message {
+    background-color: var(--bg-surface);
+    border: 2px dashed var(--border-color);
+    padding: 3rem;
+    text-align: center;
+    border-radius: 12px;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 3rem;
+}
+
+.poster-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+    margin-bottom: 5rem;
+}
+
+.poster-card {
+    background-color: var(--bg-surface);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    display: block;
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+a.poster-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+[data-theme="dark"] a.poster-card:hover {
+    box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+}
+
+.poster-image {
+    width: 100%;
+    height: auto; /* Megtartja az eredeti arányt */
+    display: block;
+}
+
+.category-tag {
+    position: absolute;
+    top: 1.5rem;
+    left: 1.5rem;
+    padding: 0.5rem 1.2rem;
+    border-radius: 30px;
+    color: white;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    z-index: 10;
+    letter-spacing: 0.05em;
+}
+
+.poster-info {
+    padding: 1.5rem;
+    background-color: var(--bg-surface);
+    border-top: 1px solid var(--border-color);
+}
+
+.poster-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+.poster-date {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.play-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(5px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    transition: transform 0.2s, background-color 0.3s, opacity 0.3s ease;
+    z-index: 20;
+    font-size: 2rem;
+    color: var(--color-coral);
+    padding-left: 6px; /* Hogy a FontAwesome play ikon vizuálisan középre kerüljön */
+    opacity: 0;
+}
+
+a.poster-card:hover .play-button {
+    transform: translate(-50%, -50%) scale(1.1);
+    background-color: #ffffff;
+    color: var(--color-teal);
+    opacity: 1;
+}
+
+.theme-toggle {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background-color: var(--bg-surface);
+    color: var(--text-main);
+    border: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+    z-index: 1000;
+    transition: transform 0.3s, border-color 0.3s;
+    font-size: 1.5rem;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    border-color: var(--color-teal);
+}
+
+.icon-sun, .icon-moon { display: none; }
+[data-theme="dark"] .icon-sun { display: block; }
+[data-theme="light"] .icon-moon { display: block; }
+
+.footer {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
