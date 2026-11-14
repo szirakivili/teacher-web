@@ -34,9 +34,9 @@
       <div class="runtime-icon-ring" id="runtime-icon-ring">
         <i class="fa-solid fa-circle-notch fa-spin" id="runtime-spinner-icon"></i>
       </div>
-      <div class="runtime-modal-title" id="runtime-modal-title">Várakozás a futtatókörnyezet betöltésére...</div>
+      <div class="runtime-modal-title" id="runtime-modal-title">Várakozás a futtatókörnyezetre...</div>
       <div class="runtime-modal-desc" id="runtime-modal-desc">
-        A böngészőben futó Python 3 környezet betöltése folyamatban van. Kérlek várj.
+        A böngészőben futó Python 3 környezet betöltése folyamatban van. Kérlek várj!
       </div>
       <div class="runtime-modal-step" id="runtime-modal-step">
         <i class="fa-solid fa-microchip"></i>
@@ -216,8 +216,8 @@
           <i class="fa-solid fa-forward"></i> <span>Összes futtatása</span>
         </button>
 
-        <button class="btn" id="clear-outputs-btn" type="button" title="Kimenetek törlése">
-          <i class="fa-solid fa-eraser"></i> <span>Kimenetek törlése</span>
+        <button class="btn" id="clear-outputs-btn" type="button" title="Összes kimenet törlése">
+          <i class="fa-solid fa-trash-can"></i> <span>Kimenetek törlése</span>
         </button>
 
         <div class="kernel-badge" id="kernel-status">
@@ -249,6 +249,43 @@
   <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
 
   <script>
+    // =========================================================
+    // EGYEDI PYTHON SZINTAXISPONTOSÍTÁS (WHILE/FOR, AND/OR, TRUE/FALSE)
+    // =========================================================
+    CodeMirror.defineMode('python-kzmk', function(config) {
+      const pyMode = CodeMirror.getMode(config, { name: 'python', version: 3 });
+      return {
+        startState: function() {
+          return pyMode.startState ? pyMode.startState() : {};
+        },
+        copyState: function(state) {
+          return pyMode.copyState ? pyMode.copyState(state) : state;
+        },
+        token: function(stream, state) {
+          const style = pyMode.token(stream, state);
+          const current = stream.current();
+          if (style === 'keyword' && (current === 'while' || current === 'for' || current === 'if')) {
+            return 'keyword loop-kw';
+          }
+          if ((style === 'operator' || style === 'operator word' || style === 'keyword') && (current === 'and' || current === 'or')) {
+            return 'logic-op';
+          }
+          if ((style === 'atom' || style === 'keyword' || style === 'builtin') && (current === 'True' || current === 'False')) {
+            return 'atom bool-atom';
+          }
+          return style;
+        },
+        indent: function(state, textAfter, line) {
+          return pyMode.indent ? pyMode.indent(state, textAfter, line) : CodeMirror.Pass;
+        },
+        electricInput: pyMode.electricInput,
+        blockCommentStart: pyMode.blockCommentStart,
+        blockCommentEnd: pyMode.blockCommentEnd,
+        lineComment: pyMode.lineComment,
+        fold: pyMode.fold
+      };
+    });
+
     let pyodide = null;
     let isKernelReady = false;
     let isModalLocked = true;
@@ -257,6 +294,8 @@
     let isFsWarningOpen = false;
     let executionCounter = 0;
     let activeCellId = null;
+    let runningCellId = null;
+    let cancelPendingInput = null;
     let cells = [];
     let examTimerInterval = null;
 
@@ -681,7 +720,7 @@ import json as _json
 _json.dumps([
     {'text': k, 'type': type(v).__name__}
     for k, v in globals().items()
-    if not k.startswith('_') and k not in ('In', 'Out', 'exit', 'quit', 'open', 'sys', 'builtins', 'ast')
+    if not k.startswith('_') and k not in ('In', 'Out', 'exit', 'quit', 'open', 'sys', 'builtins', 'ast', 'time', 'asyncio')
 ])
 `);
             JSON.parse(globalsJson).forEach(item => map.set(item.text, item));
@@ -711,20 +750,36 @@ _json.dumps([
     }
 
     // =========================================================
-    // PYODIDE PYTHON KERNEL ÉS INTERAKTÍV INPUT()
+    // PYODIDE PYTHON KERNEL, INPUT() ÉS VÉGTELEN CIKLUS VÉDELEM
     // =========================================================
+    function requestStopRunningCell() {
+      if (!runningCellId || !pyodide) return;
+      pyodide.globals.set('_jp_cancel_requested', true);
+      if (typeof cancelPendingInput === 'function') {
+        cancelPendingInput();
+      }
+    }
+
     async function initPyodideRuntime() {
       const badge = document.getElementById('kernel-status');
       const statusText = document.getElementById('kernel-status-text');
 
       try {
-        modalStepText.textContent = 'Python 3 betöltése és indítása...';
+        modalStepText.textContent = 'Python 3 futtatókörnyezet betöltése és indítása...';
         pyodide = await loadPyodide();
 
-        modalStepText.textContent = 'Interaktív kimenet és input() előkészítése...';
+        modalStepText.textContent = 'Interaktív kimenet és ciklusvédelem előkészítése...';
         await pyodide.runPythonAsync(`
 import sys
 import ast
+import time
+import asyncio
+
+_jp_cancel_requested = False
+_jp_start_time = 0.0
+_jp_paused_duration = 0.0
+_jp_tick_count = 0
+_JP_MAX_ACTIVE_SECONDS = 10.0
 
 class _JupyterStream:
     def __init__(self, cb):
@@ -735,15 +790,65 @@ class _JupyterStream:
     def flush(self):
         pass
 
+def _jp_sync_guard():
+    global _jp_tick_count
+    _jp_tick_count += 1
+    if _jp_cancel_requested:
+        raise KeyboardInterrupt("A futtatást a felhasználó megszakította.")
+    if _jp_tick_count & 1023 == 0:
+        active_elapsed = time.monotonic() - _jp_start_time - _jp_paused_duration
+        if active_elapsed > _JP_MAX_ACTIVE_SECONDS:
+            raise TimeoutError(
+                f"Időtúllépés ({int(_JP_MAX_ACTIVE_SECONDS)} mp): lehetséges végtelen ciklus megszakítva!"
+            )
+
+async def _jp_async_guard():
+    global _jp_tick_count
+    _jp_tick_count += 1
+    if _jp_cancel_requested:
+        raise KeyboardInterrupt("A futtatást a felhasználó megszakította.")
+    if _jp_tick_count % 2000 == 0:
+        active_elapsed = time.monotonic() - _jp_start_time - _jp_paused_duration
+        if active_elapsed > _JP_MAX_ACTIVE_SECONDS:
+            raise TimeoutError(
+                f"Időtúllépés ({int(_JP_MAX_ACTIVE_SECONDS)} mp): lehetséges végtelen ciklus megszakítva!"
+            )
+        await asyncio.sleep(0)
+
 async def _jp_async_input(prompt=""):
+    global _jp_paused_duration
+    if _jp_cancel_requested:
+        raise KeyboardInterrupt("A futtatást a felhasználó megszakította.")
     if prompt:
         sys.stdout.write(str(prompt))
-    return await _js_request_input(str(prompt))
+    t0 = time.monotonic()
+    try:
+        return await _js_request_input(str(prompt))
+    finally:
+        _jp_paused_duration += (time.monotonic() - t0)
 
-class _InputAwaitTransformer(ast.NodeTransformer):
+class _CellSafetyTransformer(ast.NodeTransformer):
+    def __init__(self):
+        super().__init__()
+        self.is_async = True
+
+    def visit_FunctionDef(self, node):
+        prev = self.is_async
+        self.is_async = False
+        self.generic_visit(node)
+        self.is_async = prev
+        return node
+
+    def visit_AsyncFunctionDef(self, node):
+        prev = self.is_async
+        self.is_async = True
+        self.generic_visit(node)
+        self.is_async = prev
+        return node
+
     def visit_Call(self, node):
         self.generic_visit(node)
-        if isinstance(node.func, ast.Name) and node.func.id == 'input':
+        if self.is_async and isinstance(node.func, ast.Name) and node.func.id == 'input':
             return ast.Await(value=ast.Call(
                 func=ast.Name(id='_jp_async_input', ctx=ast.Load()),
                 args=node.args,
@@ -751,9 +856,32 @@ class _InputAwaitTransformer(ast.NodeTransformer):
             ))
         return node
 
+    def _make_guard_stmt(self):
+        if self.is_async:
+            return ast.Expr(value=ast.Await(value=ast.Call(
+                func=ast.Name(id='_jp_async_guard', ctx=ast.Load()),
+                args=[],
+                keywords=[]
+            )))
+        return ast.Expr(value=ast.Call(
+            func=ast.Name(id='_jp_sync_guard', ctx=ast.Load()),
+            args=[],
+            keywords=[]
+        ))
+
+    def visit_While(self, node):
+        self.generic_visit(node)
+        node.body.insert(0, self._make_guard_stmt())
+        return node
+
+    def visit_For(self, node):
+        self.generic_visit(node)
+        node.body.insert(0, self._make_guard_stmt())
+        return node
+
 def _prepare_cell(source_code):
     tree = ast.parse(source_code, mode='exec')
-    tree = _InputAwaitTransformer().visit(tree)
+    tree = _CellSafetyTransformer().visit(tree)
     ast.fix_missing_locations(tree)
 
     if tree.body and isinstance(tree.body[-1], ast.Expr):
@@ -806,6 +934,12 @@ def _prepare_cell(source_code):
 
     async function runCodeCell(cellId) {
       if (!isKernelReady) return;
+      if (runningCellId !== null) {
+        if (runningCellId === cellId) {
+          requestStopRunningCell();
+        }
+        return;
+      }
 
       const cell = cells.find(c => c.id === cellId);
       const editor = editors[cellId];
@@ -816,14 +950,16 @@ def _prepare_cell(source_code):
       const badge = document.getElementById('kernel-status');
       const statusText = document.getElementById('kernel-status-text');
 
+      runningCellId = cellId;
       badge.classList.add('busy');
       statusText.textContent = 'Python 3 | Futás...';
       refs.runBtn.classList.add('running');
+      refs.runBtn.title = 'Futtatás megállítása';
       refs.runBtn.innerHTML = '<i class="fa-solid fa-stop"></i>';
+      refs.clearOutBtn.disabled = true;
       refs.promptEl.textContent = 'In [*]';
       refs.outputEl.innerHTML = '';
       refs.outputRow.classList.add('has-output');
-      refs.outPromptEl.textContent = '';
 
       let currentLineDiv = null;
 
@@ -848,7 +984,7 @@ def _prepare_cell(source_code):
       };
 
       pyodide.globals.set('_js_request_input', () => {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
           if (!currentLineDiv) {
             currentLineDiv = document.createElement('div');
             currentLineDiv.className = 'output-line';
@@ -867,9 +1003,16 @@ def _prepare_cell(source_code):
           currentLineDiv.appendChild(wrap);
           inp.focus();
 
+          cancelPendingInput = () => {
+            cancelPendingInput = null;
+            wrap.remove();
+            reject(new Error('KeyboardInterrupt: A futtatást a felhasználó megszakította.'));
+          };
+
           const inputKeyHandler = (e) => {
             if (e.key === 'Enter') {
               e.preventDefault();
+              cancelPendingInput = null;
               const val = inp.value;
               const doneSpan = document.createElement('span');
               doneSpan.className = 'submitted-input';
@@ -889,6 +1032,10 @@ def _prepare_cell(source_code):
         await pyodide.runPythonAsync(`
 sys.stdout = _JupyterStream(_js_stdout_cb)
 sys.stderr = _JupyterStream(_js_stdout_cb)
+_jp_cancel_requested = False
+_jp_start_time = time.monotonic()
+_jp_paused_duration = 0.0
+_jp_tick_count = 0
 `);
 
         if (code.trim().length > 0) {
@@ -915,7 +1062,11 @@ await __jp_cell_runner__()
         refs.outputEl.appendChild(errBox);
         refs.promptEl.textContent = 'In [!]';
       } finally {
+        cancelPendingInput = null;
+        runningCellId = null;
+        refs.clearOutBtn.disabled = false;
         refs.runBtn.classList.remove('running');
+        refs.runBtn.title = 'Futtatás (Shift + Enter)';
         refs.runBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
         badge.classList.remove('busy');
         statusText.textContent = 'Python 3 | OK';
@@ -1056,7 +1207,13 @@ await __jp_cell_runner__()
           runBtn.className = 'run-cell-btn';
           runBtn.title = 'Futtatás (Shift + Enter)';
           runBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
-          runBtn.onclick = () => runCodeCell(cell.id);
+          runBtn.onclick = () => {
+            if (runningCellId === cell.id) {
+              requestStopRunningCell();
+            } else {
+              runCodeCell(cell.id);
+            }
+          };
 
           const promptEl = document.createElement('span');
           promptEl.className = 'exec-prompt';
@@ -1081,6 +1238,18 @@ await __jp_cell_runner__()
           const outPromptEl = document.createElement('div');
           outPromptEl.className = 'jp-out-prompt';
 
+          const clearOutBtn = document.createElement('button');
+          clearOutBtn.type = 'button';
+          clearOutBtn.className = 'clear-cell-output-btn';
+          clearOutBtn.title = 'Aktuális kimenet törlése';
+          clearOutBtn.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
+          clearOutBtn.onclick = () => {
+            if (runningCellId === cell.id) return;
+            outputEl.innerHTML = '';
+            outputRow.classList.remove('has-output');
+          };
+          outPromptEl.appendChild(clearOutBtn);
+
           const outputEl = document.createElement('div');
           outputEl.className = 'output-area';
 
@@ -1091,11 +1260,12 @@ await __jp_cell_runner__()
           container.appendChild(cellEl);
 
           const cm = CodeMirror.fromTextArea(textarea, {
-            mode: 'python',
+            mode: 'python-kzmk',
             theme: 'default',
             lineNumbers: true,
             indentUnit: 4,
             tabSize: 4,
+            indentWithTabs: false,
             autoCloseBrackets: true,
             viewportMargin: Infinity,
             extraKeys: {
@@ -1110,6 +1280,9 @@ await __jp_cell_runner__()
                 } else {
                   cmInst.replaceSelection('    ', 'end');
                 }
+              },
+              'Shift-Tab': (cmInst) => {
+                cmInst.indentSelection('subtract');
               }
             }
           });
@@ -1123,7 +1296,7 @@ await __jp_cell_runner__()
           });
 
           editors[cell.id] = cm;
-          cellDomRefs[cell.id] = { outputRow, outputEl, promptEl, outPromptEl, runBtn };
+          cellDomRefs[cell.id] = { outputRow, outputEl, promptEl, outPromptEl, runBtn, clearOutBtn };
         } else {
           const mdDiv = document.createElement('div');
           mdDiv.className = 'jp-markdown';
@@ -1194,7 +1367,6 @@ await __jp_cell_runner__()
         return;
       }
 
-      // Teljes képernyő aktiválása közvetlenül a "Notebook betöltése" gomb megnyomásakor
       enterLockedFullscreen();
 
       const selectedMode = quizCheckbox.checked
@@ -1233,6 +1405,7 @@ await __jp_cell_runner__()
     });
 
     document.getElementById('clear-outputs-btn').addEventListener('click', () => {
+      if (runningCellId !== null) return;
       Object.values(cellDomRefs).forEach(ref => {
         ref.outputEl.innerHTML = '';
         ref.outputRow.classList.remove('has-output');
