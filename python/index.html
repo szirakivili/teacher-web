@@ -789,8 +789,8 @@ def _prepare_cell(source_code):
 
         isKernelReady = true;
         badge.classList.add('ready');
-        statusText.textContent = 'Python 3 | Kész';
-        modalStepText.textContent = 'Futtatókörnyezet kész!';
+        statusText.textContent = 'Python 3 | OK';
+        modalStepText.textContent = 'Futtatókörnyezet betöltve!';
         closeRuntimeModal();
       } catch (err) {
         statusText.textContent = 'Kernel hiba';
@@ -918,7 +918,7 @@ await __jp_cell_runner__()
         refs.runBtn.classList.remove('running');
         refs.runBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
         badge.classList.remove('busy');
-        statusText.textContent = 'Python 3 | Kész';
+        statusText.textContent = 'Python 3 | OK';
       }
     }
 
