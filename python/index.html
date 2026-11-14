@@ -1288,7 +1288,7 @@ def _prepare_cell(source_code):
       refs.runBtn.title = 'Futtatás megállítása';
       refs.runBtn.innerHTML = '<i class="fa-solid fa-stop"></i>';
       refs.clearOutBtn.disabled = true;
-      refs.promptEl.textContent = 'In [*]';
+      refs.promptEl.textContent = '[*]';
       refs.outputEl.innerHTML = '';
       refs.outputRow.classList.add('has-output');
 
@@ -1379,7 +1379,7 @@ await __jp_cell_runner__()
         }
 
         executionCounter++;
-        refs.promptEl.textContent = `In [${executionCounter}]`;
+        refs.promptEl.textContent = `[${executionCounter}]`;
 
         if (refs.outputEl.innerHTML.trim() === '') {
           refs.outputRow.classList.remove('has-output');
@@ -1391,7 +1391,7 @@ await __jp_cell_runner__()
           .replace(/File "<exec>", line \d+, in <module>\n/g, '')
           .replace(/File "<cell>", line \d+, in __jp_cell_runner__\n/g, '');
         refs.outputEl.appendChild(errBox);
-        refs.promptEl.textContent = 'In [!]';
+        refs.promptEl.textContent = '[!]';
       } finally {
         cancelPendingInput = null;
         runningCellId = null;
@@ -1548,7 +1548,7 @@ await __jp_cell_runner__()
 
           const promptEl = document.createElement('span');
           promptEl.className = 'exec-prompt';
-          promptEl.textContent = 'In [ ]';
+          promptEl.textContent = '[ ]';
 
           promptCol.appendChild(runBtn);
           promptCol.appendChild(promptEl);
@@ -1824,7 +1824,7 @@ await __jp_cell_runner__()
       Object.values(cellDomRefs).forEach(ref => {
         ref.outputEl.innerHTML = '';
         ref.outputRow.classList.remove('has-output');
-        ref.promptEl.textContent = 'In [ ]';
+        ref.promptEl.textContent = '[ ]';
       });
     });
 
