@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="hu" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KZMK Python Notebook</title>
+
+  <!-- Python logó Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 110 110'%3E%3Cpath fill='%23387EB8' d='M54.5 6C30.4 6 32 16.4 32 16.4l.03 10.8h22.9v3.2H23.1S8 28.7 8 52.8c0 24.1 13.2 23.2 13.2 23.2h7.9V64.8s-.4-13.2 13-13.2h22.4s12.6.2 12.6-12.2V18.8S79 6 54.5 6zm-12.4 7.4c2.3 0 4.1 1.8 4.1 4.1s-1.8 4.1-4.1 4.1-4.1-1.8-4.1-4.1 1.8-4.1 4.1-4.1z'/%3E%3Cpath fill='%23FFD43B' d='M55.5 104c24.1 0 22.5-10.4 22.5-10.4l-.03-10.8H55.1v-3.2h31.8s15.1 1.7 15.1-22.4c0-24.1-13.2-23.2-13.2-23.2h-7.9v11.2s.4 13.2-13 13.2H45.5S32.9 58.2 32.9 70.6v20.6S31 104 55.5 104zm12.4-7.4c-2.3 0-4.1-1.8-4.1-4.1s1.8-4.1 4.1-4.1 4.1 1.8 4.1 4.1-1.8 4.1-4.1 4.1z'/%3E%3C/svg%3E" />
+
+  <!-- Google Fonts: Inter (UI) & JetBrains Mono (kód) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome 6 Free -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <!-- KaTeX (LaTeX) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+
+  <!-- CodeMirror 5 CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css" />
+
+  <!-- Saját CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- FÓKUSZÁLT BETÖLTŐ ABLAK -->
+  <div class="runtime-modal-backdrop" id="runtime-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="runtime-modal-title">
+    <div class="runtime-modal-card" id="runtime-modal-card" tabindex="-1">
+      <div class="runtime-icon-ring" id="runtime-icon-ring">
+        <i class="fa-solid fa-circle-notch fa-spin" id="runtime-spinner-icon"></i>
+      </div>
+      <div class="runtime-modal-title" id="runtime-modal-title">Várakozás a futtatókörnyezet betöltésére...</div>
+      <div class="runtime-modal-desc" id="runtime-modal-desc">
+        A böngészőben futó Python 3 környezet betöltése folyamatban van. Kérlek várj.
+      </div>
+      <div class="runtime-modal-step" id="runtime-modal-step">
+        <i class="fa-solid fa-microchip"></i>
+        <span id="runtime-modal-step-text">Futtatókörnyezet indítása...</span>
+      </div>
+      <div class="runtime-modal-actions" id="runtime-modal-actions">
+        <button class="btn" id="runtime-modal-close-btn">
+          <i class="fa-solid fa-xmark"></i> Bezárás
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TELJES KÉPERNYŐ KILÉPÉS MEGERŐSÍTŐ HTML WARNING ABLAK -->
+  <div class="runtime-modal-backdrop hidden" id="fs-exit-backdrop" style="display: none;" role="alertdialog" aria-modal="true" aria-labelledby="fs-exit-title">
+    <div class="runtime-modal-card warning-card" id="fs-exit-card" tabindex="-1">
+      <div class="runtime-icon-ring warning-icon-ring">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <div class="runtime-modal-title" id="fs-exit-title">Teljes képernyős mód</div>
+      <div class="runtime-modal-desc">
+        Biztosan kilépsz a teljes képernyőből?
+      </div>
+      <div class="warning-modal-buttons">
+        <button type="button" class="btn btn-stay-fs" id="fs-stay-btn">
+          <i class="fa-solid fa-expand"></i>
+          <span>Maradok teljes képernyőn</span>
+        </button>
+        <button type="button" class="btn btn-leave-fs" id="fs-leave-btn">
+          <i class="fa-solid fa-compress"></i>
+          <span>Igen, kilépés</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       1. KEZDŐLAP (FÁJLNÉV MEGADÁSA + RÖPDOLGOZAT / TÉMAZÁRÓ / ÓRA)
+       ========================================================= -->
+  <section class="start-screen" id="start-screen">
+    <div class="start-theme-corner">
+      <button class="btn theme-toggle-trigger" type="button" title="Világos / Sötét téma váltása">
+        <i class="fa-solid fa-sun"></i> <span>Világos téma</span>
+      </button>
+    </div>
+
+    <div class="start-card">
+      <div class="start-brand">
+        <div class="logo-badge">
+          <svg viewBox="0 0 110 110" width="28" height="28" aria-hidden="true">
+            <defs>
+              <linearGradient id="pyBlueStart" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#387EB8"/>
+                <stop offset="100%" stop-color="#366994"/>
+              </linearGradient>
+              <linearGradient id="pyYellowStart" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FFE873"/>
+                <stop offset="100%" stop-color="#FFC331"/>
+              </linearGradient>
+            </defs>
+            <path fill="url(#pyBlueStart)" d="M54.5 6C30.4 6 32 16.4 32 16.4l.03 10.8h22.9v3.2H23.1S8 28.7 8 52.8c0 24.1 13.2 23.2 13.2 23.2h7.9V64.8s-.4-13.2 13-13.2h22.4s12.6.2 12.6-12.2V18.8S79 6 54.5 6zm-12.4 7.4c2.3 0 4.1 1.8 4.1 4.1s-1.8 4.1-4.1 4.1-4.1-1.8-4.1-4.1 1.8-4.1 4.1-4.1z"/>
+            <path fill="url(#pyYellowStart)" d="M55.5 104c24.1 0 22.5-10.4 22.5-10.4l-.03-10.8H55.1v-3.2h31.8s15.1 1.7 15.1-22.4c0-24.1-13.2-23.2-13.2-23.2h-7.9v11.2s.4 13.2-13 13.2H45.5S32.9 58.2 32.9 70.6v20.6S31 104 55.5 104zm12.4-7.4c-2.3 0-4.1-1.8-4.1-4.1s1.8-4.1 4.1-4.1 4.1 1.8 4.1 4.1-1.8 4.1-4.1 4.1z"/>
+          </svg>
+        </div>
+        <h1>KZMK Python Notebook</h1>
+      </div>
+      <p class="start-subtitle">
+        Add meg a megnyitni kívánt munkafüzet nevét!
+      </p>
+
+      <form id="start-form" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="start-filename-input">
+            <i class="fa-solid fa-file-code"></i>
+            <span>Notebook fájl neve</span>
+          </label>
+          <div class="filename-input-group">
+            <span class="input-leading-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <input
+              type="text"
+              id="start-filename-input"
+              class="filename-input"
+              placeholder="pl. feladatok_01"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <span class="ext-suffix">.ipynb</span>
+          </div>
+        </div>
+
+        <div class="mode-options-stack">
+          <label class="checkbox-row" for="quiz-mode-checkbox">
+            <input type="checkbox" id="quiz-mode-checkbox" />
+            <div class="checkbox-text-wrap">
+              <span class="checkbox-title">
+                <i class="fa-solid fa-clock icon-quiz"></i>
+                <span>Röpdolgozat</span>
+              </span>
+              <span class="checkbox-desc">15 perc</span>
+            </div>
+          </label>
+
+          <label class="checkbox-row" for="exam-mode-checkbox">
+            <input type="checkbox" id="exam-mode-checkbox" />
+            <div class="checkbox-text-wrap">
+              <span class="checkbox-title">
+                <i class="fa-solid fa-stopwatch icon-exam"></i>
+                <span>Témazáró dolgozat</span>
+              </span>
+              <span class="checkbox-desc">40 perc</span>
+            </div>
+          </label>
+
+          <label class="checkbox-row" for="clock-mode-checkbox">
+            <input type="checkbox" id="clock-mode-checkbox" />
+            <div class="checkbox-text-wrap">
+              <span class="checkbox-title">
+                <i class="fa-regular fa-clock icon-clock"></i>
+                <span>Óra</span>
+              </span>
+              <span class="checkbox-desc">Pontos idő</span>
+            </div>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="start-load-btn">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i>
+          <span>Notebook betöltése</span>
+        </button>
+      </form>
+
+      <div class="start-error" id="start-error-msg"></div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       2. NOTEBOOK FELÜLET (BETÖLTÉS UTÁN)
+       ========================================================= -->
+  <div class="notebook-app" id="notebook-app">
+    <header>
+      <div class="header-left">
+        <div class="jupyter-brand">
+          <svg viewBox="0 0 110 110" width="26" height="26" aria-hidden="true">
+            <defs>
+              <linearGradient id="pyBlueHeader" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#387EB8"/>
+                <stop offset="100%" stop-color="#366994"/>
+              </linearGradient>
+              <linearGradient id="pyYellowHeader" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FFE873"/>
+                <stop offset="100%" stop-color="#FFC331"/>
+              </linearGradient>
+            </defs>
+            <path fill="url(#pyBlueHeader)" d="M54.5 6C30.4 6 32 16.4 32 16.4l.03 10.8h22.9v3.2H23.1S8 28.7 8 52.8c0 24.1 13.2 23.2 13.2 23.2h7.9V64.8s-.4-13.2 13-13.2h22.4s12.6.2 12.6-12.2V18.8S79 6 54.5 6zm-12.4 7.4c2.3 0 4.1 1.8 4.1 4.1s-1.8 4.1-4.1 4.1-4.1-1.8-4.1-4.1 1.8-4.1 4.1-4.1z"/>
+            <path fill="url(#pyYellowHeader)" d="M55.5 104c24.1 0 22.5-10.4 22.5-10.4l-.03-10.8H55.1v-3.2h31.8s15.1 1.7 15.1-22.4c0-24.1-13.2-23.2-13.2-23.2h-7.9v11.2s.4 13.2-13 13.2H45.5S32.9 58.2 32.9 70.6v20.6S31 104 55.5 104zm12.4-7.4c-2.3 0-4.1-1.8-4.1-4.1s1.8-4.1 4.1-4.1 4.1 1.8 4.1 4.1-1.8 4.1-4.1 4.1z"/>
+          </svg>
+          <span class="brand-title-text">KZMK Python Notebook</span>
+        </div>
+        <span class="notebook-filename">
+          <i class="fa-solid fa-file-code"></i>
+          <span id="notebook-title">notebook.ipynb</span>
+        </span>
+      </div>
+
+      <div class="header-actions">
+        <!-- Visszaszámláló / Aktuális óra (csak ikon + óra) -->
+        <div class="exam-timer-badge" id="exam-timer-badge" title="Hátralévő idő">
+          <i class="fa-solid fa-stopwatch" id="exam-timer-icon"></i>
+          <span class="exam-timer-value" id="exam-timer-value">40:00</span>
+        </div>
+
+        <button class="btn theme-toggle-trigger" type="button" title="Világos / Sötét téma váltása">
+          <i class="fa-solid fa-sun"></i> <span>Világos téma</span>
+        </button>
+
+        <button class="btn btn-run-all" id="run-all-btn" type="button" title="Összes cella futtatása">
+          <i class="fa-solid fa-forward"></i> <span>Összes futtatása</span>
+        </button>
+
+        <button class="btn" id="clear-outputs-btn" type="button" title="Kimenetek törlése">
+          <i class="fa-solid fa-eraser"></i> <span>Kimenetek törlése</span>
+        </button>
+
+        <div class="kernel-badge" id="kernel-status">
+          <span class="kernel-dot"></span>
+          <span id="kernel-status-text">Python 3 betöltése...</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="exam-expired-banner" id="exam-expired-banner">
+        <i class="fa-solid fa-hourglass-end"></i>
+        <span>Letelt az idő!</span>
+      </div>
+      <div class="notebook-sheet" id="notebook-container"></div>
+    </main>
+  </div>
+
+  <!-- KaTeX JS -->
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+
+  <!-- CodeMirror 5 & Hint Addons -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
+
+  <!-- Pyodide (böngészős Python WebAssembly értelmező) -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
+
+  <script>
+    let pyodide = null;
+    let isKernelReady = false;
+    let isModalLocked = true;
+    let isNotebookOpened = false;
+    let allowFullscreenExit = false;
+    let isFsWarningOpen = false;
+    let executionCounter = 0;
+    let activeCellId = null;
+    let cells = [];
+    let examTimerInterval = null;
+
+    const editors = {};
+    const cellDomRefs = {};
+
+    // =========================================================
+    // TELJES KÉPERNYŐ + ESC WARNING MODÁLIS ABLAK KEZELÉSE
+    // =========================================================
+    const fsExitBackdrop = document.getElementById('fs-exit-backdrop');
+    const fsExitCard = document.getElementById('fs-exit-card');
+    const fsStayBtn = document.getElementById('fs-stay-btn');
+    const fsLeaveBtn = document.getElementById('fs-leave-btn');
+
+    async function enterLockedFullscreen() {
+      allowFullscreenExit = false;
+      try {
+        if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+        }
+      } catch (err) {
+        // Böngésző korlátozás esetén a következő felhasználói kattintáskor aktiválódik
+      }
+
+      try {
+        if (navigator.keyboard && typeof navigator.keyboard.lock === 'function') {
+          await navigator.keyboard.lock(['Escape']);
+        }
+      } catch (err) {
+        // Keyboard Lock csak HTTPS / localhost környezetben támogatott
+      }
+    }
+
+    function openExitFullscreenWarning() {
+      if (isFsWarningOpen || isModalLocked) return;
+      isFsWarningOpen = true;
+      fsExitBackdrop.style.display = 'flex';
+      void fsExitBackdrop.offsetWidth;
+      fsExitBackdrop.classList.remove('hidden');
+      setTimeout(() => {
+        fsStayBtn.focus();
+      }, 20);
+    }
+
+    function closeExitFullscreenWarning() {
+      isFsWarningOpen = false;
+      fsExitBackdrop.classList.add('hidden');
+      setTimeout(() => {
+        if (!isFsWarningOpen) {
+          fsExitBackdrop.style.display = 'none';
+        }
+      }, 250);
+    }
+
+    fsStayBtn.addEventListener('click', async () => {
+      closeExitFullscreenWarning();
+      await enterLockedFullscreen();
+      if (activeCellId && editors[activeCellId]) {
+        editors[activeCellId].focus();
+      }
+    });
+
+    fsLeaveBtn.addEventListener('click', async () => {
+      allowFullscreenExit = true;
+      closeExitFullscreenWarning();
+      try {
+        if (navigator.keyboard && typeof navigator.keyboard.unlock === 'function') {
+          navigator.keyboard.unlock();
+        }
+        if (document.fullscreenElement && document.exitFullscreen) {
+          await document.exitFullscreen();
+        }
+      } catch (err) {}
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' || e.key === 'Esc' || e.code === 'Escape' || e.keyCode === 27) {
+        if (isNotebookOpened && !allowFullscreenExit) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          e.stopPropagation();
+          if (!isFsWarningOpen) {
+            openExitFullscreenWarning();
+          }
+        }
+      }
+    }, true);
+
+    document.addEventListener('fullscreenchange', () => {
+      if (document.fullscreenElement) {
+        if (navigator.keyboard && typeof navigator.keyboard.lock === 'function') {
+          navigator.keyboard.lock(['Escape']).catch(() => {});
+        }
+      } else if (isNotebookOpened && !allowFullscreenExit) {
+        openExitFullscreenWarning();
+      }
+    });
+
+    // =========================================================
+    // BETÖLTŐ MODÁLIS ABLAK FÓKUSZKEZELÉSE
+    // =========================================================
+    const modalBackdrop = document.getElementById('runtime-modal-backdrop');
+    const modalCard = document.getElementById('runtime-modal-card');
+    const modalStepText = document.getElementById('runtime-modal-step-text');
+    const modalTitle = document.getElementById('runtime-modal-title');
+    const modalDesc = document.getElementById('runtime-modal-desc');
+    const modalIconRing = document.getElementById('runtime-icon-ring');
+    const modalActions = document.getElementById('runtime-modal-actions');
+    const modalCloseBtn = document.getElementById('runtime-modal-close-btn');
+
+    modalCard.focus();
+
+    document.addEventListener('focusin', (e) => {
+      if (isModalLocked && !modalCard.contains(e.target)) {
+        e.stopPropagation();
+        modalCard.focus();
+      } else if (isFsWarningOpen && !fsExitCard.contains(e.target)) {
+        e.stopPropagation();
+        fsStayBtn.focus();
+      }
+    }, true);
+
+    document.addEventListener('keydown', (e) => {
+      if (isModalLocked && e.key === 'Tab') {
+        e.preventDefault();
+        if (modalActions.classList.contains('visible')) {
+          modalCloseBtn.focus();
+        } else {
+          modalCard.focus();
+        }
+      } else if (isFsWarningOpen && e.key === 'Tab') {
+        e.preventDefault();
+        if (document.activeElement === fsStayBtn) {
+          fsLeaveBtn.focus();
+        } else {
+          fsStayBtn.focus();
+        }
+      }
+    }, true);
+
+    function closeRuntimeModal() {
+      isModalLocked = false;
+      modalBackdrop.classList.add('hidden');
+      setTimeout(() => {
+        modalBackdrop.style.display = 'none';
+        const startScreen = document.getElementById('start-screen');
+        if (!startScreen.classList.contains('hidden')) {
+          document.getElementById('start-filename-input').focus();
+        } else {
+          const firstCodeCell = cells.find(c => c.type === 'code');
+          if (firstCodeCell && editors[firstCodeCell.id]) {
+            editors[firstCodeCell.id].focus();
+          }
+        }
+      }, 280);
+    }
+
+    modalCloseBtn.addEventListener('click', closeRuntimeModal);
+
+    // =========================================================
+    // TÉMA VÁLTÁS (ALAPÉRTELMEZETT: SÖTÉT TÉMA)
+    // =========================================================
+    const themeToggleBtns = document.querySelectorAll('.theme-toggle-trigger');
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('jp-notebook-theme', theme);
+      const html = theme === 'dark'
+        ? '<i class="fa-solid fa-sun"></i> <span>Világos téma</span>'
+        : '<i class="fa-solid fa-moon"></i> <span>Sötét téma</span>';
+      themeToggleBtns.forEach(btn => { btn.innerHTML = html; });
+    }
+
+    const savedTheme = localStorage.getItem('jp-notebook-theme') || 'dark';
+    applyTheme(savedTheme);
+
+    themeToggleBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        applyTheme(current === 'dark' ? 'light' : 'dark');
+      });
+    });
+
+    // =========================================================
+    // RÖPDOLGOZAT (15P), TÉMAZÁRÓ (40P) ÉS AKTUÁLIS ÓRA KEZELÉSE
+    // =========================================================
+    const quizCheckbox = document.getElementById('quiz-mode-checkbox');
+    const examCheckbox = document.getElementById('exam-mode-checkbox');
+    const clockCheckbox = document.getElementById('clock-mode-checkbox');
+
+    const modeCheckboxes = [quizCheckbox, examCheckbox, clockCheckbox];
+    modeCheckboxes.forEach((cb) => {
+      cb.addEventListener('change', () => {
+        if (cb.checked) {
+          modeCheckboxes.forEach((other) => {
+            if (other !== cb) other.checked = false;
+          });
+        }
+      });
+    });
+
+    function formatRemainingTime(totalSeconds) {
+      const mins = Math.floor(totalSeconds / 60);
+      const secs = totalSeconds % 60;
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function startCountdown(durationSeconds) {
+      const badge = document.getElementById('exam-timer-badge');
+      const iconEl = document.getElementById('exam-timer-icon');
+      const valueEl = document.getElementById('exam-timer-value');
+      const expiredBanner = document.getElementById('exam-expired-banner');
+
+      if (examTimerInterval) clearInterval(examTimerInterval);
+
+      let remaining = durationSeconds;
+      const warningThreshold = Math.min(300, Math.floor(durationSeconds * 0.2));
+
+      badge.title = 'Hátralévő idő';
+      iconEl.className = 'fa-solid fa-stopwatch';
+      badge.classList.remove('warning', 'expired');
+      badge.classList.add('visible');
+      valueEl.textContent = formatRemainingTime(remaining);
+
+      examTimerInterval = setInterval(() => {
+        remaining--;
+        if (remaining <= 0) {
+          clearInterval(examTimerInterval);
+          examTimerInterval = null;
+          valueEl.textContent = '00:00';
+          badge.classList.remove('warning');
+          badge.classList.add('expired');
+          expiredBanner.classList.add('visible');
+          return;
+        }
+
+        valueEl.textContent = formatRemainingTime(remaining);
+        if (remaining <= warningThreshold) {
+          badge.classList.add('warning');
+        }
+      }, 1000);
+    }
+
+    function startLiveClock() {
+      const badge = document.getElementById('exam-timer-badge');
+      const iconEl = document.getElementById('exam-timer-icon');
+      const valueEl = document.getElementById('exam-timer-value');
+
+      if (examTimerInterval) clearInterval(examTimerInterval);
+
+      badge.title = 'Aktuális idő';
+      iconEl.className = 'fa-regular fa-clock';
+      badge.classList.remove('warning', 'expired');
+      badge.classList.add('visible');
+
+      valueEl.innerHTML = '<span id="live-clock-hh">--</span><span class="clock-colon" id="live-clock-colon">:</span><span id="live-clock-mm">--</span>';
+      const hhEl = document.getElementById('live-clock-hh');
+      const mmEl = document.getElementById('live-clock-mm');
+      const colonEl = document.getElementById('live-clock-colon');
+
+      const updateClock = () => {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const sec = now.getSeconds();
+
+        if (hhEl.textContent !== hh) hhEl.textContent = hh;
+        if (mmEl.textContent !== mm) mmEl.textContent = mm;
+
+        if (sec % 2 === 1) {
+          colonEl.classList.add('hidden-tick');
+        } else {
+          colonEl.classList.remove('hidden-tick');
+        }
+      };
+
+      updateClock();
+      examTimerInterval = setInterval(updateClock, 250);
+    }
+
+    // =========================================================
+    // AI NÉLKÜLI KÓDKIEGÉSZÍTÉS (AUTOCOMPLETE)
+    // =========================================================
+    const PYTHON_BASE_HINTS = [
+      { text: 'print', type: 'builtin' },
+      { text: 'input', type: 'builtin' },
+      { text: 'len', type: 'builtin' },
+      { text: 'range', type: 'builtin' },
+      { text: 'int', type: 'type' },
+      { text: 'str', type: 'type' },
+      { text: 'float', type: 'type' },
+      { text: 'bool', type: 'type' },
+      { text: 'list', type: 'type' },
+      { text: 'dict', type: 'type' },
+      { text: 'set', type: 'type' },
+      { text: 'tuple', type: 'type' },
+      { text: 'type', type: 'builtin' },
+      { text: 'sum', type: 'builtin' },
+      { text: 'min', type: 'builtin' },
+      { text: 'max', type: 'builtin' },
+      { text: 'abs', type: 'builtin' },
+      { text: 'round', type: 'builtin' },
+      { text: 'sorted', type: 'builtin' },
+      { text: 'enumerate', type: 'builtin' },
+      { text: 'zip', type: 'builtin' },
+      { text: 'import', type: 'keyword' },
+      { text: 'from', type: 'keyword' },
+      { text: 'def', type: 'keyword' },
+      { text: 'return', type: 'keyword' },
+      { text: 'if', type: 'keyword' },
+      { text: 'elif', type: 'keyword' },
+      { text: 'else', type: 'keyword' },
+      { text: 'for', type: 'keyword' },
+      { text: 'while', type: 'keyword' },
+      { text: 'in', type: 'keyword' },
+      { text: 'and', type: 'keyword' },
+      { text: 'or', type: 'keyword' },
+      { text: 'not', type: 'keyword' },
+      { text: 'True', type: 'const' },
+      { text: 'False', type: 'const' },
+      { text: 'None', type: 'const' },
+      { text: 'random', type: 'module' }
+    ];
+
+    const TYPE_METHODS = {
+      str: ['upper', 'lower', 'capitalize', 'title', 'strip', 'lstrip', 'rstrip', 'split', 'join', 'replace', 'find', 'startswith', 'endswith', 'count', 'isdigit', 'isalpha', 'format'],
+      list: ['append', 'extend', 'insert', 'remove', 'pop', 'clear', 'index', 'count', 'sort', 'reverse', 'copy'],
+      dict: ['get', 'keys', 'values', 'items', 'update', 'pop', 'clear', 'copy', 'setdefault'],
+      random: ['randint', 'random', 'choice', 'choices', 'shuffle', 'sample', 'randrange', 'uniform']
+    };
+
+    function pythonHintProvider(cm) {
+      const cursor = cm.getCursor();
+      const line = cm.getLine(cursor.line);
+      const beforeCursor = line.slice(0, cursor.ch);
+
+      const dotMatch = beforeCursor.match(/([a-zA-Z_][a-zA-Z0-9_]*|["'][^"']*["']|\[[^\]]*\]|\{[^\}]*\})\.([a-zA-Z0-9_]*)$/);
+      if (dotMatch) {
+        const targetExpr = dotMatch[1];
+        const prefix = dotMatch[2] || '';
+        const from = CodeMirror.Pos(cursor.line, cursor.ch - prefix.length);
+        const to = cursor;
+        let suggestions = [];
+
+        if (isKernelReady && pyodide) {
+          try {
+            const safeExpr = JSON.stringify(targetExpr);
+            const rawJson = pyodide.runPython(`
+import json as _json
+def _jp_attrs(expr):
+    try:
+        obj = eval(expr)
+        out = []
+        for name in dir(obj):
+            if not name.startswith('_'):
+                try:
+                    kind = 'method' if callable(getattr(obj, name)) else 'attr'
+                except Exception:
+                    kind = 'attr'
+                out.append({'text': name, 'type': kind})
+        return _json.dumps(out)
+    except Exception:
+        return '[]'
+_jp_attrs(${safeExpr})
+`);
+            suggestions = JSON.parse(rawJson);
+          } catch (e) {
+            suggestions = [];
+          }
+        }
+
+        if (suggestions.length === 0) {
+          let inferred = null;
+          if (/^["']/.test(targetExpr)) inferred = 'str';
+          else if (/^\[/.test(targetExpr)) inferred = 'list';
+          else if (/^\{/.test(targetExpr)) inferred = 'dict';
+          else if (targetExpr === 'random') inferred = 'random';
+          else {
+            const assignRegex = new RegExp(`\\b${targetExpr}\\s*=\\s*(["'\\[\\{])`);
+            const m = cm.getValue().match(assignRegex);
+            if (m) {
+              if (m[1] === '"' || m[1] === "'") inferred = 'str';
+              else if (m[1] === '[') inferred = 'list';
+              else if (m[1] === '{') inferred = 'dict';
+            }
+          }
+          if (inferred && TYPE_METHODS[inferred]) {
+            suggestions = TYPE_METHODS[inferred].map(m => ({ text: m, type: 'method' }));
+          }
+        }
+
+        const filtered = suggestions
+          .filter(item => item.text.toLowerCase().startsWith(prefix.toLowerCase()))
+          .map(item => ({
+            text: item.text,
+            render: (el) => {
+              const nameEl = document.createElement('span');
+              nameEl.textContent = item.text;
+              const typeEl = document.createElement('span');
+              typeEl.className = 'hint-meta';
+              typeEl.textContent = item.type;
+              el.appendChild(nameEl);
+              el.appendChild(typeEl);
+            }
+          }));
+
+        return filtered.length > 0 ? { list: filtered, from, to } : null;
+      }
+
+      const wordMatch = beforeCursor.match(/([a-zA-Z_][a-zA-Z0-9_]*)$/);
+      if (wordMatch) {
+        const prefix = wordMatch[1];
+        const from = CodeMirror.Pos(cursor.line, cursor.ch - prefix.length);
+        const to = cursor;
+        const map = new Map();
+        PYTHON_BASE_HINTS.forEach(h => map.set(h.text, h));
+
+        if (isKernelReady && pyodide) {
+          try {
+            const globalsJson = pyodide.runPython(`
+import json as _json
+_json.dumps([
+    {'text': k, 'type': type(v).__name__}
+    for k, v in globals().items()
+    if not k.startswith('_') and k not in ('In', 'Out', 'exit', 'quit', 'open', 'sys', 'builtins', 'ast')
+])
+`);
+            JSON.parse(globalsJson).forEach(item => map.set(item.text, item));
+          } catch (e) {}
+        }
+
+        const filtered = Array.from(map.values())
+          .filter(item => item.text.toLowerCase().startsWith(prefix.toLowerCase()) && item.text !== prefix)
+          .sort((a, b) => a.text.localeCompare(b.text))
+          .map(item => ({
+            text: item.text,
+            render: (el) => {
+              const nameEl = document.createElement('span');
+              nameEl.textContent = item.text;
+              const typeEl = document.createElement('span');
+              typeEl.className = 'hint-meta';
+              typeEl.textContent = item.type;
+              el.appendChild(nameEl);
+              el.appendChild(typeEl);
+            }
+          }));
+
+        return filtered.length > 0 ? { list: filtered, from, to } : null;
+      }
+
+      return null;
+    }
+
+    // =========================================================
+    // PYODIDE PYTHON KERNEL ÉS INTERAKTÍV INPUT()
+    // =========================================================
+    async function initPyodideRuntime() {
+      const badge = document.getElementById('kernel-status');
+      const statusText = document.getElementById('kernel-status-text');
+
+      try {
+        modalStepText.textContent = 'Python 3 betöltése és indítása...';
+        pyodide = await loadPyodide();
+
+        modalStepText.textContent = 'Interaktív kimenet és input() előkészítése...';
+        await pyodide.runPythonAsync(`
+import sys
+import ast
+
+class _JupyterStream:
+    def __init__(self, cb):
+        self.cb = cb
+    def write(self, text):
+        if text:
+            self.cb(str(text))
+    def flush(self):
+        pass
+
+async def _jp_async_input(prompt=""):
+    if prompt:
+        sys.stdout.write(str(prompt))
+    return await _js_request_input(str(prompt))
+
+class _InputAwaitTransformer(ast.NodeTransformer):
+    def visit_Call(self, node):
+        self.generic_visit(node)
+        if isinstance(node.func, ast.Name) and node.func.id == 'input':
+            return ast.Await(value=ast.Call(
+                func=ast.Name(id='_jp_async_input', ctx=ast.Load()),
+                args=node.args,
+                keywords=node.keywords
+            ))
+        return node
+
+def _prepare_cell(source_code):
+    tree = ast.parse(source_code, mode='exec')
+    tree = _InputAwaitTransformer().visit(tree)
+    ast.fix_missing_locations(tree)
+
+    if tree.body and isinstance(tree.body[-1], ast.Expr):
+        last_expr = tree.body[-1].value
+        is_print = isinstance(last_expr, ast.Call) and isinstance(last_expr.func, ast.Name) and last_expr.func.id == 'print'
+        if not is_print:
+            assign = ast.Assign(targets=[ast.Name(id='__last_val__', ctx=ast.Store())], value=last_expr)
+            if_stmt = ast.If(
+                test=ast.Compare(left=ast.Name(id='__last_val__', ctx=ast.Load()), ops=[ast.IsNot()], comparators=[ast.Constant(value=None)]),
+                body=[ast.Expr(value=ast.Call(func=ast.Name(id='print', ctx=ast.Load()), args=[ast.Call(func=ast.Name(id='repr', ctx=ast.Load()), args=[ast.Name(id='__last_val__', ctx=ast.Load())], keywords=[])], keywords=[]))],
+                orelse=[]
+            )
+            tree.body[-1] = assign
+            tree.body.append(if_stmt)
+            ast.fix_missing_locations(tree)
+
+    func_def = ast.AsyncFunctionDef(
+        name='__jp_cell_runner__',
+        args=ast.arguments(posonlyargs=[], args=[], kwonlyargs=[], kw_defaults=[], defaults=[]),
+        body=tree.body + [
+            ast.Expr(value=ast.Call(
+                func=ast.Attribute(value=ast.Call(func=ast.Name(id='globals', ctx=ast.Load()), args=[], keywords=[]), attr='update', ctx=ast.Load()),
+                args=[ast.Call(func=ast.Name(id='locals', ctx=ast.Load()), args=[], keywords=[])],
+                keywords=[]
+            ))
+        ],
+        decorator_list=[]
+    )
+    module = ast.Module(body=[func_def], type_ignores=[])
+    ast.fix_missing_locations(module)
+    return compile(module, '<cell>', 'exec')
+`);
+
+        isKernelReady = true;
+        badge.classList.add('ready');
+        statusText.textContent = 'Python 3 | Kész';
+        modalStepText.textContent = 'Futtatókörnyezet kész!';
+        closeRuntimeModal();
+      } catch (err) {
+        statusText.textContent = 'Kernel hiba';
+        modalIconRing.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color: var(--accent-red);"></i>';
+        modalTitle.textContent = 'Hiba a futtatókörnyezet betöltésekor';
+        modalDesc.textContent = String(err.message || err);
+        modalStepText.textContent = 'Sikertelen indítás';
+        modalActions.classList.add('visible');
+        modalCloseBtn.focus();
+        console.error(err);
+      }
+    }
+
+    async function runCodeCell(cellId) {
+      if (!isKernelReady) return;
+
+      const cell = cells.find(c => c.id === cellId);
+      const editor = editors[cellId];
+      const refs = cellDomRefs[cellId];
+      if (!cell || !editor || !refs) return;
+
+      const code = editor.getValue();
+      const badge = document.getElementById('kernel-status');
+      const statusText = document.getElementById('kernel-status-text');
+
+      badge.classList.add('busy');
+      statusText.textContent = 'Python 3 | Futás...';
+      refs.runBtn.classList.add('running');
+      refs.runBtn.innerHTML = '<i class="fa-solid fa-stop"></i>';
+      refs.promptEl.textContent = 'In [*]';
+      refs.outputEl.innerHTML = '';
+      refs.outputRow.classList.add('has-output');
+      refs.outPromptEl.textContent = '';
+
+      let currentLineDiv = null;
+
+      const appendOutput = (text) => {
+        const parts = text.split('\n');
+        parts.forEach((part, idx) => {
+          if (idx > 0) currentLineDiv = null;
+          if (part.length > 0) {
+            if (!currentLineDiv) {
+              currentLineDiv = document.createElement('div');
+              currentLineDiv.className = 'output-line';
+              refs.outputEl.appendChild(currentLineDiv);
+            }
+            currentLineDiv.appendChild(document.createTextNode(part));
+          } else if (idx > 0 && idx < parts.length - 1) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'output-line';
+            emptyDiv.textContent = ' ';
+            refs.outputEl.appendChild(emptyDiv);
+          }
+        });
+      };
+
+      pyodide.globals.set('_js_request_input', () => {
+        return new Promise((resolve) => {
+          if (!currentLineDiv) {
+            currentLineDiv = document.createElement('div');
+            currentLineDiv.className = 'output-line';
+            refs.outputEl.appendChild(currentLineDiv);
+          }
+
+          const wrap = document.createElement('span');
+          wrap.className = 'inline-input-wrap';
+
+          const inp = document.createElement('input');
+          inp.type = 'text';
+          inp.className = 'inline-input-box';
+          inp.placeholder = '';
+
+          wrap.appendChild(inp);
+          currentLineDiv.appendChild(wrap);
+          inp.focus();
+
+          const inputKeyHandler = (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              const val = inp.value;
+              const doneSpan = document.createElement('span');
+              doneSpan.className = 'submitted-input';
+              doneSpan.textContent = val;
+              wrap.replaceWith(doneSpan);
+              currentLineDiv = null;
+              resolve(val);
+            }
+          };
+          inp.addEventListener('keydown', inputKeyHandler);
+        });
+      });
+
+      pyodide.globals.set('_js_stdout_cb', appendOutput);
+
+      try {
+        await pyodide.runPythonAsync(`
+sys.stdout = _JupyterStream(_js_stdout_cb)
+sys.stderr = _JupyterStream(_js_stdout_cb)
+`);
+
+        if (code.trim().length > 0) {
+          pyodide.globals.set('__raw_cell_code__', code);
+          await pyodide.runPythonAsync(`
+_compiled = _prepare_cell(__raw_cell_code__)
+exec(_compiled, globals())
+await __jp_cell_runner__()
+`);
+        }
+
+        executionCounter++;
+        refs.promptEl.textContent = `In [${executionCounter}]`;
+
+        if (refs.outputEl.innerHTML.trim() === '') {
+          refs.outputRow.classList.remove('has-output');
+        }
+      } catch (err) {
+        const errBox = document.createElement('div');
+        errBox.className = 'output-error';
+        errBox.textContent = String(err.message || err)
+          .replace(/File "<exec>", line \d+, in <module>\n/g, '')
+          .replace(/File "<cell>", line \d+, in __jp_cell_runner__\n/g, '');
+        refs.outputEl.appendChild(errBox);
+        refs.promptEl.textContent = 'In [!]';
+      } finally {
+        refs.runBtn.classList.remove('running');
+        refs.runBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+        badge.classList.remove('busy');
+        statusText.textContent = 'Python 3 | Kész';
+      }
+    }
+
+    // =========================================================
+    // MARKDOWN + DŐLT (*...*) + LATEX (KATEX) RENDERELŐ
+    // =========================================================
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function renderMarkdown(md) {
+      const codePlaceholders = [];
+      const mathPlaceholders = [];
+
+      let text = md.replace(/`([^`\n]+)`/g, (_, codeContent) => {
+        const id = codePlaceholders.length;
+        codePlaceholders.push(`<code>${escapeHtml(codeContent)}</code>`);
+        return `\x00CODE_${id}\x00`;
+      });
+
+      text = text.replace(/\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]/g, (_, d1, d2) => {
+        const tex = (d1 !== undefined ? d1 : d2).trim();
+        const id = mathPlaceholders.length;
+        mathPlaceholders.push({ tex, displayMode: true });
+        return `\x00MATH_${id}\x00`;
+      });
+
+      text = text.replace(/(?<!\\)\$([^\s$](?:[^$\n]*?[^\s$])?|[^\s$])(?<!\\)\$|\\\(([\s\S]+?)\\\)/g, (_, m1, m2) => {
+        const tex = (m1 !== undefined ? m1 : m2).trim();
+        const id = mathPlaceholders.length;
+        mathPlaceholders.push({ tex, displayMode: false });
+        return `\x00MATH_${id}\x00`;
+      });
+
+      text = escapeHtml(text);
+
+      text = text.replace(/\*\*\*([^\s*](?:[^*]*?[^\s*])?|[^\s*])\*\*\*/g, '<strong><em>$1</em></strong>');
+      text = text.replace(/\*\*([^\s*](?:[^*]*?[^\s*])?|[^\s*])\*\*/g, '<strong>$1</strong>');
+      text = text.replace(/\*([^\s*](?:[^*\n]*?[^\s*])?|[^\s*])\*/g, '<em>$1</em>');
+
+      const lines = text.split('\n');
+      const htmlLines = [];
+      let inList = false;
+
+      for (const rawLine of lines) {
+        const line = rawLine.trim();
+        if (/^###\s+/.test(line)) {
+          if (inList) { htmlLines.push('</ul>'); inList = false; }
+          htmlLines.push(`<h3>${line.replace(/^###\s+/, '')}</h3>`);
+        } else if (/^##\s+/.test(line)) {
+          if (inList) { htmlLines.push('</ul>'); inList = false; }
+          htmlLines.push(`<h2>${line.replace(/^##\s+/, '')}</h2>`);
+        } else if (/^#\s+/.test(line)) {
+          if (inList) { htmlLines.push('</ul>'); inList = false; }
+          htmlLines.push(`<h1>${line.replace(/^#\s+/, '')}</h1>`);
+        } else if (/^[-*]\s+/.test(line)) {
+          if (!inList) { htmlLines.push('<ul>'); inList = true; }
+          htmlLines.push(`<li>${line.replace(/^[-*]\s+/, '')}</li>`);
+        } else {
+          if (inList) { htmlLines.push('</ul>'); inList = false; }
+          if (line.length > 0) {
+            htmlLines.push(`<p>${rawLine}</p>`);
+          }
+        }
+      }
+      if (inList) htmlLines.push('</ul>');
+
+      let finalHtml = htmlLines.join('');
+
+      finalHtml = finalHtml.replace(/\x00MATH_(\d+)\x00/g, (_, idxStr) => {
+        const item = mathPlaceholders[Number(idxStr)];
+        if (!item) return '';
+        if (typeof katex !== 'undefined') {
+          try {
+            return katex.renderToString(item.tex, {
+              displayMode: item.displayMode,
+              throwOnError: false
+            });
+          } catch (e) {
+            return escapeHtml(item.tex);
+          }
+        }
+        return escapeHtml(item.tex);
+      });
+
+      finalHtml = finalHtml.replace(/\x00CODE_(\d+)\x00/g, (_, idxStr) => {
+        return codePlaceholders[Number(idxStr)] || '';
+      });
+
+      return finalHtml;
+    }
+
+    // =========================================================
+    // NOTEBOOK PARSE ÉS RENDERELÉS (RÖGZÍTETT CELLÁK)
+    // =========================================================
+    function parseIpynb(ipynbJson) {
+      const rawCells = ipynbJson.cells || [];
+      return rawCells.map((c, index) => {
+        const sourceText = Array.isArray(c.source) ? c.source.join('') : (c.source || '');
+        return {
+          id: `jp-cell-${index}`,
+          type: c.cell_type === 'code' ? 'code' : 'markdown',
+          content: sourceText
+        };
+      });
+    }
+
+    function renderNotebook() {
+      const container = document.getElementById('notebook-container');
+      container.innerHTML = '';
+
+      cells.forEach((cell) => {
+        const cellEl = document.createElement('div');
+        cellEl.className = 'jp-cell' + (cell.id === activeCellId ? ' active' : '');
+
+        cellEl.addEventListener('mousedown', () => {
+          if (activeCellId !== cell.id) {
+            activeCellId = cell.id;
+            document.querySelectorAll('.jp-cell').forEach(el => el.classList.remove('active'));
+            cellEl.classList.add('active');
+          }
+        });
+
+        if (cell.type === 'code') {
+          const codeRow = document.createElement('div');
+          codeRow.className = 'jp-code-row';
+
+          const promptCol = document.createElement('div');
+          promptCol.className = 'jp-prompt-col';
+
+          const runBtn = document.createElement('button');
+          runBtn.className = 'run-cell-btn';
+          runBtn.title = 'Futtatás (Shift + Enter)';
+          runBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+          runBtn.onclick = () => runCodeCell(cell.id);
+
+          const promptEl = document.createElement('span');
+          promptEl.className = 'exec-prompt';
+          promptEl.textContent = 'In [ ]';
+
+          promptCol.appendChild(runBtn);
+          promptCol.appendChild(promptEl);
+
+          const editorBox = document.createElement('div');
+          editorBox.className = 'jp-editor-box';
+          const textarea = document.createElement('textarea');
+          textarea.value = cell.content;
+          editorBox.appendChild(textarea);
+
+          codeRow.appendChild(promptCol);
+          codeRow.appendChild(editorBox);
+          cellEl.appendChild(codeRow);
+
+          const outputRow = document.createElement('div');
+          outputRow.className = 'jp-output-row';
+
+          const outPromptEl = document.createElement('div');
+          outPromptEl.className = 'jp-out-prompt';
+
+          const outputEl = document.createElement('div');
+          outputEl.className = 'output-area';
+
+          outputRow.appendChild(outPromptEl);
+          outputRow.appendChild(outputEl);
+          cellEl.appendChild(outputRow);
+
+          container.appendChild(cellEl);
+
+          const cm = CodeMirror.fromTextArea(textarea, {
+            mode: 'python',
+            theme: 'default',
+            lineNumbers: true,
+            indentUnit: 4,
+            tabSize: 4,
+            autoCloseBrackets: true,
+            viewportMargin: Infinity,
+            extraKeys: {
+              'Esc': () => openExitFullscreenWarning(),
+              'Escape': () => openExitFullscreenWarning(),
+              'Shift-Enter': () => runCodeCell(cell.id),
+              'Ctrl-Enter': () => runCodeCell(cell.id),
+              'Ctrl-Space': (cmInst) => cmInst.showHint({ hint: pythonHintProvider, completeSingle: false }),
+              'Tab': (cmInst) => {
+                if (cmInst.somethingSelected()) {
+                  cmInst.indentSelection('add');
+                } else {
+                  cmInst.replaceSelection('    ', 'end');
+                }
+              }
+            }
+          });
+
+          cm.on('inputRead', (cmInst, change) => {
+            if (change.origin !== '+input') return;
+            const ch = change.text[0];
+            if (ch && /[a-zA-Z0-9_.]/.test(ch)) {
+              cmInst.showHint({ hint: pythonHintProvider, completeSingle: false });
+            }
+          });
+
+          editors[cell.id] = cm;
+          cellDomRefs[cell.id] = { outputRow, outputEl, promptEl, outPromptEl, runBtn };
+        } else {
+          const mdDiv = document.createElement('div');
+          mdDiv.className = 'jp-markdown';
+          mdDiv.innerHTML = renderMarkdown(cell.content);
+          cellEl.appendChild(mdDiv);
+          container.appendChild(cellEl);
+        }
+      });
+    }
+
+    function openNotebookView(fileName, ipynbData, mode) {
+      isNotebookOpened = true;
+      cells = parseIpynb(ipynbData);
+      if (cells.length > 0) activeCellId = cells[0].id;
+
+      document.getElementById('notebook-title').textContent = fileName;
+      document.getElementById('start-screen').classList.add('hidden');
+      document.getElementById('notebook-app').classList.add('visible');
+
+      renderNotebook();
+
+      if (mode === 'quiz') {
+        startCountdown(15 * 60);
+      } else if (mode === 'exam') {
+        startCountdown(40 * 60);
+      } else if (mode === 'clock') {
+        startLiveClock();
+      }
+
+      const firstCodeCell = cells.find(c => c.type === 'code');
+      if (firstCodeCell && editors[firstCodeCell.id] && !isModalLocked) {
+        editors[firstCodeCell.id].focus();
+      }
+    }
+
+    // =========================================================
+    // KEZDŐLAP FÁJLBETÖLTÉS KEZELÉSE (.IPYNB HOZZÁFŰZÉSÉVEL)
+    // =========================================================
+    const startForm = document.getElementById('start-form');
+    const filenameInput = document.getElementById('start-filename-input');
+    const startLoadBtn = document.getElementById('start-load-btn');
+    const startErrorMsg = document.getElementById('start-error-msg');
+
+    function buildIpynbFilename(rawInput) {
+      const clean = rawInput.trim();
+      if (!clean) return '';
+      return clean.toLowerCase().endsWith('.ipynb') ? clean : `${clean}.ipynb`;
+    }
+
+    function showStartError(htmlMessage) {
+      startErrorMsg.innerHTML = htmlMessage;
+      startErrorMsg.classList.add('visible');
+    }
+
+    function hideStartError() {
+      startErrorMsg.classList.remove('visible');
+      startErrorMsg.innerHTML = '';
+    }
+
+    startForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideStartError();
+
+      const fullFileName = buildIpynbFilename(filenameInput.value);
+      if (!fullFileName) {
+        showStartError('<i class="fa-solid fa-circle-exclamation"></i> Kérlek add meg a betöltendő fájl nevét!');
+        filenameInput.focus();
+        return;
+      }
+
+      // Teljes képernyő aktiválása közvetlenül a "Notebook betöltése" gomb megnyomásakor
+      enterLockedFullscreen();
+
+      const selectedMode = quizCheckbox.checked
+        ? 'quiz'
+        : (examCheckbox.checked ? 'exam' : (clockCheckbox.checked ? 'clock' : 'none'));
+
+      startLoadBtn.disabled = true;
+      startLoadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Fájl betöltése...</span>';
+
+      try {
+        const response = await fetch(fullFileName, { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const jsonData = await response.json();
+        openNotebookView(fullFileName, jsonData, selectedMode);
+      } catch (err) {
+        showStartError(
+          `<i class="fa-solid fa-circle-exclamation"></i> Nem sikerült betölteni a(z) <strong>${escapeHtml(fullFileName)}</strong> fájlt. Ellenőrizd a fájlnevet és győződj meg róla, hogy a fájl elérhető a szerveren.`
+        );
+      } finally {
+        startLoadBtn.disabled = false;
+        startLoadBtn.innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i> <span>Notebook betöltése</span>';
+      }
+    });
+
+    // =========================================================
+    // FELSŐ ESZKÖZTÁR GOMBOK
+    // =========================================================
+    document.getElementById('run-all-btn').addEventListener('click', async () => {
+      for (const cell of cells) {
+        if (cell.type === 'code') {
+          await runCodeCell(cell.id);
+        }
+      }
+    });
+
+    document.getElementById('clear-outputs-btn').addEventListener('click', () => {
+      Object.values(cellDomRefs).forEach(ref => {
+        ref.outputEl.innerHTML = '';
+        ref.outputRow.classList.remove('has-output');
+        ref.promptEl.textContent = 'In [ ]';
+      });
+    });
+
+    // Python futtatókörnyezet indítása
+    initPyodideRuntime();
+  </script>
+</body>
+</html>

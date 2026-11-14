@@ -1,0 +1,1154 @@
+/* =========================================================
+    MODERN JUPYTER TÉMA VÁLTOZÓK & SZÍNÁTMENETEK
+    ========================================================= */
+:root[data-theme="dark"] {
+    --bg-canvas: #0b0d12;
+    --bg-ambient:
+    radial-gradient(circle at 14% 12%, rgba(56, 126, 184, 0.16) 0%, transparent 42%),
+    radial-gradient(circle at 86% 85%, rgba(243, 118, 38, 0.12) 0%, transparent 44%),
+    linear-gradient(160deg, #0b0d12 0%, #11151f 55%, #0d1017 100%);
+    --bg-paper: rgba(23, 26, 34, 0.92);
+    --bg-header: rgba(18, 21, 28, 0.84);
+    --bg-cell-editor: #1b1f29;
+    --bg-cell-editor-active: #202532;
+    --border-main: rgba(255, 255, 255, 0.09);
+    --border-cell: rgba(255, 255, 255, 0.13);
+    --jupyter-orange: #f37626;
+    --jupyter-blue: #4da3ff;
+    --jupyter-prompt-in: #79b8ff;
+    --jupyter-prompt-out: #ff9472;
+    --text-primary: #eef2f7;
+    --text-secondary: #9aa5b4;
+    --text-muted: #687385;
+    --shadow-paper: 0 18px 48px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    --btn-bg: rgba(255, 255, 255, 0.045);
+    --btn-hover: rgba(255, 255, 255, 0.1);
+    --status-bg: rgba(255, 255, 255, 0.045);
+    --accent-green: #3fb950;
+    --accent-red: #f85149;
+    --accent-yellow: #f0b429;
+    --modal-bg: linear-gradient(165deg, #1b202c 0%, #141821 100%);
+    --modal-shadow: 0 28px 70px rgba(0, 0, 0, 0.78);
+    --brand-gradient: linear-gradient(135deg, #60a5fa 0%, #38bdf8 48%, #fbbf24 100%);
+    --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #f37626 50%, #ef4444 100%);
+    --primary-btn-gradient: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #0ea5e9 100%);
+    --primary-btn-shadow: 0 8px 22px rgba(37, 99, 235, 0.38);
+    --active-bar-gradient: linear-gradient(180deg, #38bdf8 0%, #3b82f6 50%, #f59e0b 100%);
+
+    /* Jupyter Dark Syntax */
+    --cm-gutter-bg: #161922;
+    --cm-linenum: #5c667a;
+    --cm-cursor: #f8fafc;
+    --cm-selection: rgba(56, 189, 248, 0.22);
+    --cm-keyword: #60a5fa;
+    --cm-builtin: #34d399;
+    --cm-def: #fde047;
+    --cm-string: #fda4af;
+    --cm-number: #a7f3d0;
+    --cm-comment: #6b7b94;
+    --cm-operator: #cbd5e1;
+    --cm-variable: #f1f5f9;
+
+    /* Autocomplete Dark */
+    --hint-bg: #1e2330;
+    --hint-border: rgba(255, 255, 255, 0.14);
+    --hint-active-bg: linear-gradient(90deg, #2563eb 0%, #0284c7 100%);
+    --hint-active-text: #ffffff;
+}
+
+:root[data-theme="light"] {
+    --bg-canvas: #eef2f7;
+    --bg-ambient:
+    radial-gradient(circle at 12% 10%, rgba(56, 126, 184, 0.14) 0%, transparent 45%),
+    radial-gradient(circle at 88% 88%, rgba(245, 158, 11, 0.12) 0%, transparent 45%),
+    linear-gradient(160deg, #f4f7fb 0%, #e9eff7 55%, #f1f5f9 100%);
+    --bg-paper: rgba(255, 255, 255, 0.96);
+    --bg-header: rgba(255, 255, 255, 0.86);
+    --bg-cell-editor: #f8fafc;
+    --bg-cell-editor-active: #ffffff;
+    --border-main: rgba(15, 23, 42, 0.1);
+    --border-cell: rgba(15, 23, 42, 0.15);
+    --jupyter-orange: #ea580c;
+    --jupyter-blue: #2563eb;
+    --jupyter-prompt-in: #1d4ed8;
+    --jupyter-prompt-out: #c2410c;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --shadow-paper: 0 12px 36px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.05);
+    --btn-bg: #f8fafc;
+    --btn-hover: #eef2f6;
+    --status-bg: #f8fafc;
+    --accent-green: #16a34a;
+    --accent-red: #dc2626;
+    --accent-yellow: #d97706;
+    --modal-bg: linear-gradient(165deg, #ffffff 0%, #f8fafc 100%);
+    --modal-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+    --brand-gradient: linear-gradient(135deg, #1d4ed8 0%, #0284c7 52%, #d97706 100%);
+    --warning-gradient: linear-gradient(135deg, #d97706 0%, #ea580c 50%, #dc2626 100%);
+    --primary-btn-gradient: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #0284c7 100%);
+    --primary-btn-shadow: 0 8px 20px rgba(37, 99, 235, 0.28);
+    --active-bar-gradient: linear-gradient(180deg, #2563eb 0%, #0ea5e9 55%, #f59e0b 100%);
+
+    /* Jupyter Pygments Light Syntax */
+    --cm-gutter-bg: #f1f5f9;
+    --cm-linenum: #94a3b8;
+    --cm-cursor: #0f172a;
+    --cm-selection: rgba(37, 99, 235, 0.15);
+    --cm-keyword: #15803d;
+    --cm-builtin: #0f766e;
+    --cm-def: #1d4ed8;
+    --cm-string: #b91c1c;
+    --cm-number: #047857;
+    --cm-comment: #64748b;
+    --cm-operator: #334155;
+    --cm-variable: #0f172a;
+
+    /* Autocomplete Light */
+    --hint-bg: #ffffff;
+    --hint-border: #cbd5e1;
+    --hint-active-bg: linear-gradient(90deg, #1d4ed8 0%, #0284c7 100%);
+    --hint-active-text: #ffffff;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-canvas);
+    background-image: var(--bg-ambient);
+    background-attachment: fixed;
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* =========================================================
+    LIGATÚRÁK TILTÁSA (==, !=, <=, >= NE VONÓDJANAK ÖSSZE!)
+    ========================================================= */
+.CodeMirror,
+.CodeMirror pre,
+.CodeMirror-line,
+.output-area,
+.jp-markdown code,
+.inline-input-box,
+.exec-prompt,
+.exam-timer-value,
+.ext-suffix {
+    font-family: 'JetBrains Mono', Consolas, 'Liberation Mono', Menlo, monospace !important;
+    font-variant-ligatures: none !important;
+    font-feature-settings: "liga" 0, "calt" 0, "dlig" 0 !important;
+}
+
+/* =========================================================
+    KÖZÉPSŐ MODÁLIS ABLAKOK (BETÖLTÉS + TELJES KÉPERNYŐ WARNING)
+    ========================================================= */
+.runtime-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background-color: rgba(7, 10, 16, 0.78);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 1;
+    transition: opacity 0.25s ease;
+}
+
+.runtime-modal-backdrop.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.runtime-modal-card {
+    background: var(--modal-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-main);
+    border-radius: 16px;
+    box-shadow: var(--modal-shadow);
+    width: 100%;
+    max-width: 430px;
+    padding: 32px 28px;
+    text-align: center;
+    outline: none;
+    position: relative;
+    overflow: hidden;
+    animation: modalPopIn 0.2s ease-out;
+}
+
+@keyframes modalPopIn {
+    from { transform: scale(0.95); opacity: 0.5; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.runtime-modal-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--brand-gradient);
+}
+
+.runtime-modal-card.warning-card::before {
+    background: var(--warning-gradient);
+}
+
+.runtime-modal-card:focus {
+    border-color: var(--jupyter-blue);
+    box-shadow: var(--modal-shadow), 0 0 0 3px rgba(77, 163, 255, 0.24);
+}
+
+.runtime-icon-ring {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 18px auto;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(56, 126, 184, 0.2), rgba(255, 212, 59, 0.18));
+    border: 1px solid rgba(96, 165, 250, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: var(--jupyter-blue);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.18);
+}
+
+.warning-icon-ring {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(239, 68, 68, 0.18));
+    border-color: rgba(245, 158, 11, 0.42);
+    color: var(--jupyter-orange);
+    box-shadow: 0 8px 20px rgba(243, 118, 38, 0.22);
+}
+
+.runtime-modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+
+.runtime-modal-desc {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--text-secondary);
+    margin-bottom: 18px;
+}
+
+.runtime-modal-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--jupyter-blue);
+    background-color: var(--btn-bg);
+    border: 1px solid var(--border-main);
+    padding: 6px 14px;
+    border-radius: 999px;
+}
+
+.runtime-modal-actions {
+    margin-top: 18px;
+    display: none;
+    justify-content: center;
+}
+
+.runtime-modal-actions.visible {
+    display: flex;
+}
+
+.warning-modal-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 22px;
+    flex-wrap: wrap;
+}
+
+.btn-stay-fs {
+    background: var(--primary-btn-gradient);
+    border: none;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 9px;
+    box-shadow: var(--primary-btn-shadow);
+}
+
+.btn-stay-fs:hover {
+    filter: brightness(1.08);
+    background: var(--primary-btn-gradient);
+}
+
+.btn-leave-fs {
+    background-color: rgba(248, 81, 73, 0.12);
+    border-color: rgba(248, 81, 73, 0.35);
+    color: var(--accent-red);
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 9px;
+}
+
+.btn-leave-fs:hover {
+    background-color: rgba(248, 81, 73, 0.22);
+    border-color: var(--accent-red);
+}
+
+/* =========================================================
+    KEZDŐLAP (FÁJLNÉV MEGADÁSA + RÖPDOLGOZAT / TÉMAZÁRÓ / ÓRA)
+    ========================================================= */
+.start-screen {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 16px;
+    position: relative;
+}
+
+.start-screen.hidden {
+    display: none;
+}
+
+.start-theme-corner {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+}
+
+.start-card {
+    background-color: var(--bg-paper);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-main);
+    border-radius: 18px;
+    box-shadow: var(--shadow-paper);
+    width: 100%;
+    max-width: 490px;
+    padding: 36px 34px;
+    position: relative;
+    overflow: hidden;
+}
+
+.start-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--brand-gradient);
+}
+
+.start-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.logo-badge {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    background: linear-gradient(145deg, rgba(56, 126, 184, 0.18), rgba(255, 212, 59, 0.14));
+    border: 1px solid var(--border-cell);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
+}
+
+.start-brand h1 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.start-subtitle {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin-bottom: 24px;
+}
+
+.start-subtitle code {
+    background: var(--btn-bg);
+    border: 1px solid var(--border-main);
+    padding: 1px 6px;
+    border-radius: 5px;
+    color: var(--jupyter-blue);
+    font-size: 12.5px;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.form-label i {
+    color: var(--jupyter-blue);
+}
+
+.filename-input-group {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid var(--border-cell);
+    border-radius: 10px;
+    background-color: var(--bg-cell-editor);
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.filename-input-group:focus-within {
+    border-color: var(--jupyter-blue);
+    box-shadow: 0 0 0 3px rgba(77, 163, 255, 0.2);
+}
+
+.input-leading-icon {
+    display: flex;
+    align-items: center;
+    padding-left: 13px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.filename-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 14.5px;
+    padding: 11px 12px;
+    outline: none;
+    min-width: 0;
+}
+
+.ext-suffix {
+    display: flex;
+    align-items: center;
+    padding: 0 13px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background-color: var(--btn-bg);
+    border-left: 1px solid var(--border-main);
+    user-select: none;
+}
+
+.mode-options-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 22px;
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(77, 163, 255, 0.04), rgba(243, 118, 38, 0.03));
+    border: 1px solid var(--border-main);
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.checkbox-row:hover {
+    border-color: var(--jupyter-blue);
+}
+
+.checkbox-row:has(input:checked) {
+    border-color: var(--jupyter-blue);
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.14), rgba(14, 165, 233, 0.08));
+}
+
+.checkbox-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--jupyter-blue);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.checkbox-text-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.checkbox-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.checkbox-title .icon-quiz {
+    color: #38bdf8;
+}
+
+.checkbox-title .icon-exam {
+    color: var(--jupyter-orange);
+}
+
+.checkbox-title .icon-clock {
+    color: var(--accent-green);
+}
+
+.checkbox-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.btn {
+    background-color: var(--btn-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-main);
+    padding: 7px 13px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: all 0.18s ease;
+}
+
+.btn:hover {
+    background-color: var(--btn-hover);
+    border-color: var(--border-cell);
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-primary {
+    width: 100%;
+    justify-content: center;
+    background: var(--primary-btn-gradient);
+    border: none;
+    color: #ffffff;
+    font-size: 14.5px;
+    font-weight: 600;
+    padding: 12px 18px;
+    border-radius: 10px;
+    box-shadow: var(--primary-btn-shadow);
+}
+
+.btn-primary:hover {
+    filter: brightness(1.08);
+    background: var(--primary-btn-gradient);
+    box-shadow: 0 10px 26px rgba(37, 99, 235, 0.45);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.start-error {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background-color: rgba(248, 81, 73, 0.1);
+    border: 1px solid rgba(248, 81, 73, 0.35);
+    color: var(--accent-red);
+    font-size: 13px;
+    line-height: 1.5;
+    display: none;
+}
+
+.start-error.visible {
+    display: block;
+}
+
+/* =========================================================
+    NOTEBOOK NÉZET & ÜVEGHATÁSÚ FELSŐ MENÜSÁV
+    ========================================================= */
+.notebook-app {
+    display: none;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.notebook-app.visible {
+    display: flex;
+}
+
+header {
+    background-color: var(--bg-header);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border-main);
+    min-height: 58px;
+    padding: 8px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.jupyter-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: -0.02em;
+}
+
+.brand-title-text {
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.notebook-filename {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    padding: 5px 11px;
+    border-radius: 8px;
+    background-color: var(--btn-bg);
+    border: 1px solid var(--border-main);
+}
+
+.notebook-filename i {
+    color: var(--jupyter-orange);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.btn-run-all {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.16), rgba(14, 165, 233, 0.14));
+    border-color: rgba(77, 163, 255, 0.35);
+    color: var(--jupyter-blue);
+    font-weight: 600;
+}
+
+.btn-run-all:hover {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.25), rgba(14, 165, 233, 0.22));
+    border-color: var(--jupyter-blue);
+}
+
+/* Visszaszámláló / Aktuális óra (csak ikon + óra) */
+.exam-timer-badge {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 13px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 700;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.18), rgba(56, 189, 248, 0.14));
+    border: 1px solid rgba(77, 163, 255, 0.45);
+    color: var(--jupyter-blue);
+    box-shadow: 0 2px 10px rgba(37, 99, 235, 0.15);
+}
+
+.exam-timer-badge.visible {
+    display: inline-flex;
+}
+
+.exam-timer-badge.warning {
+    background: linear-gradient(135deg, rgba(243, 118, 38, 0.22), rgba(245, 158, 11, 0.18));
+    border-color: rgba(243, 118, 38, 0.55);
+    color: var(--jupyter-orange);
+    animation: pulse-warn 1.5s infinite;
+}
+
+.exam-timer-badge.expired {
+    background: linear-gradient(135deg, rgba(248, 81, 73, 0.24), rgba(220, 38, 38, 0.18));
+    border-color: rgba(248, 81, 73, 0.6);
+    color: var(--accent-red);
+    animation: none;
+}
+
+@keyframes pulse-warn {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.72; }
+}
+
+.exam-timer-value {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+}
+
+.clock-colon {
+    display: inline-block;
+    transition: opacity 0.12s ease;
+}
+
+.clock-colon.hidden-tick {
+    opacity: 0;
+}
+
+.kernel-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 6px 13px;
+    border-radius: 999px;
+    background-color: var(--status-bg);
+    border: 1px solid var(--border-main);
+    color: var(--text-secondary);
+}
+
+.kernel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--accent-yellow);
+}
+
+.kernel-badge.ready .kernel-dot {
+    background-color: var(--accent-green);
+    box-shadow: 0 0 8px var(--accent-green);
+}
+
+.kernel-badge.ready {
+    color: var(--text-primary);
+}
+
+.kernel-badge.busy .kernel-dot {
+    background-color: var(--jupyter-orange);
+    box-shadow: 0 0 8px var(--jupyter-orange);
+    animation: blink 0.9s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.25; }
+}
+
+/* =========================================================
+    JUPYTER DOKUMENTUMLAP ÉS CELLÁK
+    ========================================================= */
+main {
+    max-width: 1000px;
+    width: 100%;
+    margin: 28px auto 80px auto;
+    padding: 0 18px;
+}
+
+.exam-expired-banner {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: linear-gradient(135deg, rgba(248, 81, 73, 0.16), rgba(220, 38, 38, 0.12));
+    border: 1px solid rgba(248, 81, 73, 0.45);
+    color: var(--accent-red);
+    padding: 13px 18px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.exam-expired-banner.visible {
+    display: flex;
+}
+
+.notebook-sheet {
+    background-color: var(--bg-paper);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--border-main);
+    border-radius: 14px;
+    box-shadow: var(--shadow-paper);
+    padding: 26px 28px 36px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.jp-cell {
+    position: relative;
+    padding: 8px 10px 8px 14px;
+    border-radius: 8px;
+    transition: background-color 0.15s ease;
+}
+
+.jp-cell::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 6px;
+    bottom: 6px;
+    width: 4px;
+    border-radius: 4px;
+    background: transparent;
+    transition: background 0.18s ease;
+}
+
+.jp-cell.active::before {
+    background: var(--active-bar-gradient);
+}
+
+/* =========================================================
+    MARKDOWN + LATEX (KATEX) FORMÁZÁS
+    ========================================================= */
+.jp-markdown {
+    padding: 6px 12px 6px 78px;
+    line-height: 1.7;
+    font-size: 15px;
+    color: var(--text-primary);
+}
+
+.jp-markdown h1 {
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-main);
+    letter-spacing: -0.02em;
+}
+
+.jp-markdown h2 {
+    font-size: 19px;
+    font-weight: 700;
+    margin: 14px 0 6px 0;
+}
+
+.jp-markdown h3 {
+    font-size: 16.5px;
+    font-weight: 600;
+    margin: 10px 0 4px 0;
+}
+
+.jp-markdown p {
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.jp-markdown em {
+    font-style: italic;
+}
+
+.jp-markdown strong {
+    font-weight: 700;
+}
+
+.jp-markdown ul, .jp-markdown ol {
+    margin: 6px 0 10px 22px;
+}
+
+.jp-markdown li {
+    margin-bottom: 4px;
+}
+
+.jp-markdown code {
+    background-color: var(--bg-cell-editor);
+    border: 1px solid var(--border-main);
+    padding: 2px 6px;
+    border-radius: 5px;
+    font-size: 13px;
+    color: var(--jupyter-blue);
+}
+
+.jp-markdown .katex-display {
+    margin: 14px 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 6px 0;
+}
+
+/* =========================================================
+    KÓDCELLA ELRENDEZÉS (KEREK GOMB + ALATTA KISEBB IN [ ])
+    ========================================================= */
+.jp-code-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.jp-prompt-col {
+    width: 68px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+    padding-top: 2px;
+    user-select: none;
+}
+
+.run-cell-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border-cell);
+    background-color: var(--btn-bg);
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all 0.16s ease;
+}
+
+.run-cell-btn i.fa-play {
+    margin-left: 2px;
+}
+
+.run-cell-btn:hover {
+    background: var(--primary-btn-gradient);
+    border-color: transparent;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    transform: scale(1.04);
+}
+
+.run-cell-btn.running {
+    background: linear-gradient(135deg, #f37626, #f59e0b);
+    border-color: transparent;
+    color: #ffffff;
+}
+
+.exec-prompt {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--jupyter-prompt-in);
+    white-space: nowrap;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.jp-editor-box {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid var(--border-cell);
+    border-radius: 8px;
+    background-color: var(--bg-cell-editor);
+    overflow: hidden;
+    transition: border-color 0.18s, background-color 0.18s, box-shadow 0.18s;
+}
+
+.jp-cell.active .jp-editor-box {
+    border-color: var(--jupyter-blue);
+    background-color: var(--bg-cell-editor-active);
+    box-shadow: 0 0 0 2px rgba(77, 163, 255, 0.14);
+}
+
+/* =========================================================
+    CODEMIRROR JUPYTER SZINTAXIS
+    ========================================================= */
+.CodeMirror {
+    height: auto;
+    background-color: transparent !important;
+    color: var(--cm-variable) !important;
+    font-size: 14px;
+    line-height: 1.58;
+    padding: 5px 0;
+}
+
+.CodeMirror-scroll {
+    min-height: 44px;
+}
+
+.CodeMirror-gutters {
+    background-color: var(--cm-gutter-bg) !important;
+    border-right: 1px solid var(--border-main) !important;
+}
+
+.CodeMirror-linenumber {
+    color: var(--cm-linenum) !important;
+    font-size: 12px;
+}
+
+.CodeMirror-cursor {
+    border-left: 1.5px solid var(--cm-cursor) !important;
+}
+
+.CodeMirror-selected {
+    background: var(--cm-selection) !important;
+}
+
+.cm-s-default .cm-keyword { color: var(--cm-keyword); font-weight: 600; }
+.cm-s-default .cm-builtin { color: var(--cm-builtin); }
+.cm-s-default .cm-def { color: var(--cm-def); }
+.cm-s-default .cm-string,
+.cm-s-default .cm-string-2 { color: var(--cm-string); }
+.cm-s-default .cm-number { color: var(--cm-number); }
+.cm-s-default .cm-comment { color: var(--cm-comment); font-style: italic; }
+.cm-s-default .cm-operator { color: var(--cm-operator); }
+.cm-s-default .cm-variable,
+.cm-s-default .cm-variable-2,
+.cm-s-default .cm-property { color: var(--cm-variable); }
+
+/* =========================================================
+    AUTOCOMPLETE LEGÖRDÜLŐ LISTA
+    ========================================================= */
+.CodeMirror-hints {
+    background: var(--hint-bg) !important;
+    border: 1px solid var(--hint-border) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.32) !important;
+    padding: 5px !important;
+    font-size: 13px !important;
+    z-index: 9999 !important;
+    max-height: 220px !important;
+}
+
+.CodeMirror-hint {
+    color: var(--text-primary) !important;
+    padding: 5px 10px !important;
+    border-radius: 5px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 18px !important;
+}
+
+li.CodeMirror-hint-active {
+    background: var(--hint-active-bg) !important;
+    color: var(--hint-active-text) !important;
+}
+
+.hint-meta {
+    font-size: 11px;
+    opacity: 0.78;
+}
+
+/* =========================================================
+    KIMENET ÉS INTERAKTÍV INPUT()
+    ========================================================= */
+.jp-output-row {
+    display: none;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 9px;
+}
+
+.jp-output-row.has-output {
+    display: flex;
+}
+
+.jp-out-prompt {
+    width: 68px;
+    flex-shrink: 0;
+    text-align: center;
+    font-size: 11px;
+    color: var(--jupyter-prompt-out);
+    padding-top: 3px;
+    user-select: none;
+}
+
+.output-area {
+    flex: 1;
+    min-width: 0;
+    font-size: 13.5px;
+    line-height: 1.58;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+    word-break: break-word;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background-color: rgba(128, 128, 128, 0.04);
+}
+
+.output-line {
+    min-height: 1.4em;
+}
+
+.output-error {
+    color: var(--accent-red);
+    background-color: rgba(248, 81, 73, 0.1);
+    border-left: 3px solid var(--accent-red);
+    padding: 9px 13px;
+    border-radius: 6px;
+    margin-top: 4px;
+}
+
+.inline-input-wrap {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 5px;
+}
+
+.inline-input-box {
+    background-color: var(--bg-cell-editor);
+    border: 1.5px solid var(--jupyter-blue);
+    color: var(--text-primary);
+    font-size: 13.5px;
+    padding: 2px 9px;
+    border-radius: 5px;
+    outline: none;
+    min-width: 155px;
+    box-shadow: 0 0 0 2px rgba(77, 163, 255, 0.18);
+}
+
+.submitted-input {
+    color: var(--accent-green);
+    font-weight: 600;
+}
+
+@media (max-width: 640px) {
+    header { padding: 10px 14px; }
+    .notebook-sheet { padding: 16px 12px 24px 8px; }
+    .jp-markdown { padding-left: 16px; }
+    .jp-prompt-col, .jp-out-prompt { width: 52px; }
+}
