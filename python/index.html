@@ -353,7 +353,7 @@
       }
 
       function classifyPythonToken(style, current, state) {
-        if (style === 'builtin' && current === 'print') {
+        if (style === 'builtin' && current === 'print' || current === 'input') {
           return 'builtin print-kw';
         }
         if (
