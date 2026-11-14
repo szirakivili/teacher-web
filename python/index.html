@@ -250,35 +250,364 @@
 
   <script>
     // =========================================================
-    // EGYEDI PYTHON SZINTAXISPONTOSÍTÁS (WHILE/FOR, AND/OR, TRUE/FALSE)
+    // SEGÉDFÜGGVÉNYEK A PYTHON BEHÚZÁS ÉS KOMMENTEK KEZELÉSÉHEZ
+    // =========================================================
+    function stripPythonComment(line) {
+      let inSingle = false;
+      let inDouble = false;
+      let escaped = false;
+
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (escaped) {
+          escaped = false;
+          continue;
+        }
+        if (ch === '\\') {
+          escaped = true;
+          continue;
+        }
+        if (!inDouble && ch === "'") {
+          inSingle = !inSingle;
+        } else if (!inSingle && ch === '"') {
+          inDouble = !inDouble;
+        } else if (!inSingle && !inDouble && ch === '#') {
+          return line.slice(0, i);
+        }
+      }
+      return line;
+    }
+
+    function findMatchingBlockIndent(cm, lineNum, keywordType) {
+      const currentLine = cm.getLine(lineNum) || '';
+      const currentIndent = currentLine.match(/^ */)[0].length;
+      let minIndentSeen = currentIndent;
+      const closedElseIndents = new Set();
+
+      for (let i = lineNum - 1; i >= 0; i--) {
+        const rawLine = cm.getLine(i);
+        const cleaned = stripPythonComment(rawLine).trim();
+        if (!cleaned) continue;
+
+        const ind = rawLine.match(/^ */)[0].length;
+        if (ind > minIndentSeen) {
+          continue;
+        }
+
+        minIndentSeen = ind;
+
+        const isIf = /^if\b/.test(cleaned);
+        const isElif = /^elif\b/.test(cleaned);
+        const isElse = /^else\s*:?$/.test(cleaned);
+        const isLoop = /^(for|while)\b/.test(cleaned);
+
+        if (keywordType === 'elif') {
+          if (isIf || isElif) {
+            if (!closedElseIndents.has(ind)) {
+              return ind;
+            }
+          } else if (isElse) {
+            closedElseIndents.add(ind);
+          } else if (ind < currentIndent) {
+            break;
+          }
+        } else if (keywordType === 'else') {
+          if (isElse) {
+            closedElseIndents.add(ind);
+          } else if (isIf || isElif) {
+            if (!closedElseIndents.has(ind)) {
+              return ind;
+            }
+          } else if (isLoop) {
+            if (!closedElseIndents.has(ind)) {
+              return ind;
+            }
+          } else if (ind < currentIndent && cleaned.endsWith(':')) {
+            break;
+          }
+        }
+      }
+
+      return currentIndent;
+    }
+
+    // =========================================================
+    // EGYEDI PYTHON SZINTAXISPONTOSÍTÁS (SZIVÁRVÁNY ZÁRÓJELEK)
     // =========================================================
     CodeMirror.defineMode('python-kzmk', function(config) {
       const pyMode = CodeMirror.getMode(config, { name: 'python', version: 3 });
+
+      function cloneFstringStack(stack) {
+        return stack.map(item => ({ ...item }));
+      }
+
+      function getBracketTokenClass(state, isOpen) {
+        if (isOpen) {
+          const level = state.bracketDepth % 3;
+          state.bracketDepth++;
+          return 'code-bracket-' + level;
+        }
+        state.bracketDepth = Math.max(0, state.bracketDepth - 1);
+        const level = state.bracketDepth % 3;
+        return 'code-bracket-' + level;
+      }
+
+      function classifyPythonToken(style, current, state) {
+        if (style === 'builtin' && current === 'print') {
+          return 'builtin print-kw';
+        }
+        if (
+          style === 'keyword' &&
+          (
+            current === 'while' ||
+            current === 'for' ||
+            current === 'if' ||
+            current === 'elif' ||
+            current === 'else' ||
+            current === 'break' ||
+            current === 'continue' ||
+            current === 'pass'
+          )
+        ) {
+          return 'keyword loop-kw';
+        }
+        if ((style === 'operator' || style === 'operator word' || style === 'keyword') && (current === 'and' || current === 'or')) {
+          return 'logic-op';
+        }
+        if ((style === 'atom' || style === 'keyword' || style === 'builtin') && (current === 'True' || current === 'False')) {
+          return 'atom bool-atom';
+        }
+        if (
+          style !== 'string' &&
+          style !== 'string-2' &&
+          style !== 'comment' &&
+          (current === '(' || current === '[' || current === '{')
+        ) {
+          return getBracketTokenClass(state, true);
+        }
+        if (
+          style !== 'string' &&
+          style !== 'string-2' &&
+          style !== 'comment' &&
+          (current === ')' || current === ']' || current === '}')
+        ) {
+          return getBracketTokenClass(state, false);
+        }
+        return style;
+      }
+
+      function tokenizeNormalPython(stream, state) {
+        // f-string prefix (f"...", F"...", rf"...", fr"...") felismerése, az f a True-val egyező kék legyen
+        if (
+          stream.match(/^[rR]?[fF](?=["'])/) ||
+          stream.match(/^[fF][rR](?=["'])/)
+        ) {
+          state.pendingFStringQuote = true;
+          return 'atom bool-atom';
+        }
+
+        const style = pyMode.token(stream, state.pyState);
+        const current = stream.current();
+        return classifyPythonToken(style, current, state);
+      }
+
       return {
         startState: function() {
-          return pyMode.startState ? pyMode.startState() : {};
+          return {
+            pyState: pyMode.startState ? pyMode.startState() : {},
+            fstringStack: [],
+            pendingFStringQuote: false,
+            bracketDepth: 0
+          };
         },
         copyState: function(state) {
-          return pyMode.copyState ? pyMode.copyState(state) : state;
+          return {
+            pyState: pyMode.copyState ? pyMode.copyState(state.pyState) : { ...state.pyState },
+            fstringStack: cloneFstringStack(state.fstringStack),
+            pendingFStringQuote: state.pendingFStringQuote,
+            bracketDepth: state.bracketDepth
+          };
         },
         token: function(stream, state) {
-          const style = pyMode.token(stream, state);
-          const current = stream.current();
-          if (style === 'keyword' && (current === 'while' || current === 'for' || current === 'if')) {
-            return 'keyword loop-kw';
+          // Közvetlenül az f prefix utáni nyitó idézőjel kezelése
+          if (state.pendingFStringQuote) {
+            state.pendingFStringQuote = false;
+            const quoteMatch =
+              stream.match(/^"""/) ||
+              stream.match(/^'''/) ||
+              stream.match(/^"/) ||
+              stream.match(/^'/);
+
+            if (quoteMatch) {
+              const q = quoteMatch[0];
+              state.fstringStack.push({
+                quote: q,
+                triple: q.length === 3,
+                inExpr: false,
+                braceDepth: 0,
+                parenDepth: 0,
+                inFormatSpec: false
+              });
+              return 'string';
+            }
           }
-          if ((style === 'operator' || style === 'operator word' || style === 'keyword') && (current === 'and' || current === 'or')) {
-            return 'logic-op';
+
+          // Aktív f-string belsejének feldolgozása
+          if (state.fstringStack.length > 0) {
+            const top = state.fstringStack[state.fstringStack.length - 1];
+
+            // Nem tripla idézőjeles f-string új sor elején lezáródik (hibatűrés gépelés közben)
+            if (stream.sol() && !top.triple) {
+              if (top.inExpr && top.braceDepth > 0) {
+                state.bracketDepth = Math.max(0, state.bracketDepth - top.braceDepth);
+              }
+              state.fstringStack.pop();
+              return this.token(stream, state);
+            }
+
+            // 1. Az f-string kifejezésrészén ({...}) belül vagyunk
+            if (top.inExpr) {
+              // Formátum-specifikáció (pl. :.2f)
+              if (top.inFormatSpec) {
+                if (stream.peek() === '{') {
+                  stream.next();
+                  top.braceDepth++;
+                  return getBracketTokenClass(state, true);
+                }
+                if (stream.peek() === '}') {
+                  stream.next();
+                  top.braceDepth--;
+                  if (top.braceDepth <= 0) {
+                    top.inExpr = false;
+                    top.braceDepth = 0;
+                    top.parenDepth = 0;
+                    top.inFormatSpec = false;
+                  }
+                  return getBracketTokenClass(state, false);
+                }
+                if (!top.triple && stream.match(top.quote)) {
+                  if (top.braceDepth > 0) {
+                    state.bracketDepth = Math.max(0, state.bracketDepth - top.braceDepth);
+                  }
+                  state.fstringStack.pop();
+                  return 'string';
+                }
+                stream.next();
+                while (
+                  !stream.eol() &&
+                  stream.peek() !== '{' &&
+                  stream.peek() !== '}' &&
+                  (top.triple || !stream.match(top.quote, false))
+                ) {
+                  stream.next();
+                }
+                return 'string';
+              }
+
+              // Kapcsos zárójelek az f-string kifejezésben (a külső f-string { } is beleszámít)
+              if (stream.peek() === '{') {
+                stream.next();
+                top.braceDepth++;
+                return getBracketTokenClass(state, true);
+              }
+              if (stream.peek() === '}') {
+                stream.next();
+                top.braceDepth--;
+                if (top.braceDepth <= 0) {
+                  top.inExpr = false;
+                  top.braceDepth = 0;
+                  top.parenDepth = 0;
+                }
+                return getBracketTokenClass(state, false);
+              }
+
+              // Kerek és szögletes zárójelek az f-string kifejezésen belül
+              if (stream.peek() === '(' || stream.peek() === '[') {
+                stream.next();
+                top.parenDepth++;
+                return getBracketTokenClass(state, true);
+              }
+              if (stream.peek() === ')' || stream.peek() === ']') {
+                stream.next();
+                top.parenDepth = Math.max(0, top.parenDepth - 1);
+                return getBracketTokenClass(state, false);
+              }
+
+              // Formátum specifikáció kezdete (pl. f"{szam:.2f}")
+              if (top.braceDepth === 1 && top.parenDepth === 0 && stream.peek() === ':') {
+                stream.next();
+                top.inFormatSpec = true;
+                return 'string';
+              }
+
+              // Hibatűrés: ha még nem írt záró }-t, de lezárta a string idézőjelét
+              if (!top.triple && top.braceDepth === 1 && top.parenDepth === 0 && stream.match(top.quote)) {
+                state.bracketDepth = Math.max(0, state.bracketDepth - 1);
+                state.fstringStack.pop();
+                return 'string';
+              }
+
+              return tokenizeNormalPython(stream, state);
+            }
+
+            // 2. Az f-string szöveges részén belül vagyunk
+            if (stream.match(top.quote)) {
+              state.fstringStack.pop();
+              return 'string';
+            }
+
+            // Dupla {{ vagy }} menekített karakterként szöveg marad
+            if (stream.match('{{') || stream.match('}}')) {
+              return 'string';
+            }
+
+            // Nyitó { a változók / kifejezések beillesztéséhez (szinttől függő zárójelszínnel)
+            if (stream.peek() === '{') {
+              stream.next();
+              top.inExpr = true;
+              top.braceDepth = 1;
+              top.parenDepth = 0;
+              top.inFormatSpec = false;
+              return getBracketTokenClass(state, true);
+            }
+
+            // Escape szekvencia (pl. \", \', \\, \n)
+            if (stream.peek() === '\\') {
+              stream.next();
+              if (!stream.eol()) {
+                stream.next();
+              }
+              return 'string';
+            }
+
+            // Normál karakterek az f-string szövegében
+            stream.next();
+            while (
+              !stream.eol() &&
+              stream.peek() !== '\\' &&
+              stream.peek() !== '{' &&
+              stream.peek() !== '}' &&
+              !stream.match(top.quote, false)
+            ) {
+              stream.next();
+            }
+            return 'string';
           }
-          if ((style === 'atom' || style === 'keyword' || style === 'builtin') && (current === 'True' || current === 'False')) {
-            return 'atom bool-atom';
-          }
-          return style;
+
+          // Normál Python kód az f-stringen kívül
+          return tokenizeNormalPython(stream, state);
         },
         indent: function(state, textAfter, line) {
-          return pyMode.indent ? pyMode.indent(state, textAfter, line) : CodeMirror.Pass;
+          const trimmedAfter = stripPythonComment(textAfter || '').trim();
+          const curIndent = (line || '').match(/^ */)[0].length;
+          const indentUnit = config.indentUnit || 4;
+
+          if (/^elif\b/.test(trimmedAfter) || /^else\s*:?$/.test(trimmedAfter)) {
+            return Math.max(0, curIndent - indentUnit);
+          }
+          return curIndent;
         },
-        electricInput: pyMode.electricInput,
+        electricInput: /^\s*(?:elif\b|else\s*:)$/,
         blockCommentStart: pyMode.blockCommentStart,
         blockCommentEnd: pyMode.blockCommentEnd,
         lineComment: pyMode.lineComment,
@@ -610,6 +939,8 @@
       { text: 'else', type: 'keyword' },
       { text: 'for', type: 'keyword' },
       { text: 'while', type: 'keyword' },
+      { text: 'break', type: 'keyword' },
+      { text: 'continue', type: 'keyword' },
       { text: 'in', type: 'keyword' },
       { text: 'and', type: 'keyword' },
       { text: 'or', type: 'keyword' },
@@ -1274,6 +1605,53 @@ await __jp_cell_runner__()
               'Shift-Enter': () => runCodeCell(cell.id),
               'Ctrl-Enter': () => runCodeCell(cell.id),
               'Ctrl-Space': (cmInst) => cmInst.showHint({ hint: pythonHintProvider, completeSingle: false }),
+              'Enter': (cmInst) => {
+                if (cmInst.state.completionActive) {
+                  return CodeMirror.Pass;
+                }
+                if (cmInst.somethingSelected()) {
+                  cmInst.replaceSelection('\n', 'end');
+                  return;
+                }
+
+                const cursor = cmInst.getCursor();
+                const lineText = cmInst.getLine(cursor.line);
+                const afterCursor = lineText.slice(cursor.ch);
+
+                const trimmedFull = stripPythonComment(lineText).trim();
+                if (/^elif\b/.test(trimmedFull)) {
+                  const targetIndent = findMatchingBlockIndent(cmInst, cursor.line, 'elif');
+                  const curIndent = lineText.match(/^ */)[0].length;
+                  if (targetIndent !== curIndent) {
+                    cmInst.replaceRange(' '.repeat(targetIndent), { line: cursor.line, ch: 0 }, { line: cursor.line, ch: curIndent });
+                  }
+                } else if (/^else\s*:?$/.test(trimmedFull)) {
+                  const targetIndent = findMatchingBlockIndent(cmInst, cursor.line, 'else');
+                  const curIndent = lineText.match(/^ */)[0].length;
+                  if (targetIndent !== curIndent) {
+                    cmInst.replaceRange(' '.repeat(targetIndent), { line: cursor.line, ch: 0 }, { line: cursor.line, ch: curIndent });
+                  }
+                }
+
+                const updatedLine = cmInst.getLine(cursor.line);
+                const diff = updatedLine.length - lineText.length;
+                const updatedBefore = updatedLine.slice(0, Math.max(0, cursor.ch + diff));
+                const prevIndent = updatedLine.match(/^ */)[0].length;
+                const cleanedBefore = stripPythonComment(updatedBefore).trim();
+
+                const nextIndent = cleanedBefore.endsWith(':')
+                  ? prevIndent + cmInst.getOption('indentUnit')
+                  : prevIndent;
+
+                const indentStr = ' '.repeat(nextIndent);
+                const trailingText = afterCursor.trimStart();
+                cmInst.replaceRange(
+                  '\n' + indentStr + trailingText,
+                  { line: cursor.line, ch: updatedBefore.length },
+                  { line: cursor.line, ch: updatedLine.length }
+                );
+                cmInst.setCursor({ line: cursor.line + 1, ch: indentStr.length });
+              },
               'Tab': (cmInst) => {
                 if (cmInst.somethingSelected()) {
                   cmInst.indentSelection('add');
@@ -1283,6 +1661,43 @@ await __jp_cell_runner__()
               },
               'Shift-Tab': (cmInst) => {
                 cmInst.indentSelection('subtract');
+              }
+            }
+          });
+
+          cm.on('change', (cmInst, change) => {
+            if (change.origin !== '+input' && change.origin !== 'paste') return;
+            const lineNum = change.from.line;
+            const lineText = cmInst.getLine(lineNum);
+            if (!lineText) return;
+
+            const cleaned = stripPythonComment(lineText).trim();
+            const curIndent = lineText.match(/^ */)[0].length;
+            const lastChar = change.text[change.text.length - 1] || '';
+
+            if (/^elif(?:\s|:|$)/.test(cleaned) && (cleaned.length > 4 || lastChar === ' ' || lastChar === ':')) {
+              const targetIndent = findMatchingBlockIndent(cmInst, lineNum, 'elif');
+              if (targetIndent !== curIndent) {
+                cmInst.operation(() => {
+                  cmInst.replaceRange(
+                    ' '.repeat(targetIndent),
+                    { line: lineNum, ch: 0 },
+                    { line: lineNum, ch: curIndent },
+                    '+autoindent'
+                  );
+                });
+              }
+            } else if (/^else\s*:?$/.test(cleaned) && (cleaned === 'else:' || lastChar === ':' || lastChar === ' ')) {
+              const targetIndent = findMatchingBlockIndent(cmInst, lineNum, 'else');
+              if (targetIndent !== curIndent) {
+                cmInst.operation(() => {
+                  cmInst.replaceRange(
+                    ' '.repeat(targetIndent),
+                    { line: lineNum, ch: 0 },
+                    { line: lineNum, ch: curIndent },
+                    '+autoindent'
+                  );
+                });
               }
             }
           });

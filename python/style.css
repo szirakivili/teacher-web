@@ -41,12 +41,17 @@
     --cm-cursor: #f8fafc;
     --cm-selection: rgba(56, 189, 248, 0.22);
     --cm-keyword: #60a5fa;
-    --cm-loop: #e879f9;
+    --cm-loop: #cf70c7;
     --cm-bool: #3b82f6;
     --cm-logic-op: #85b4ff;
     --cm-builtin: #34d399;
+    --cm-print: #ffee9b;
+    --cm-bracket: #fdc952;
+    --cm-bracket-2: #b892de;
+    --cm-bracket-3: var(--cm-bool);
+    --cm-fstring-brace: #b892de;
     --cm-def: #fde047;
-    --cm-string: #fda4af;
+    --cm-string: #e7926b;
     --cm-number: #a7f3d0;
     --cm-comment: #259d00;
     --cm-operator: #cbd5e1;
@@ -93,20 +98,25 @@
     --primary-btn-shadow: 0 8px 20px rgba(37, 99, 235, 0.28);
     --active-bar-gradient: linear-gradient(180deg, #3b82f6 0%, #2563eb 55%, #1d4ed8 100%);
 
-    /* Jupyter Pygments Light Syntax */
+    /* Jupyter Light Syntax (a sötét mód színvilágához igazítva) */
     --cm-gutter-bg: #f1f5f9;
     --cm-linenum: #94a3b8;
     --cm-cursor: #0f172a;
     --cm-selection: rgba(37, 99, 235, 0.15);
-    --cm-keyword: #15803d;
-    --cm-loop: #a21caf;
-    --cm-bool: #1e40af;
-    --cm-logic-op: #7badff;
-    --cm-builtin: #0f766e;
-    --cm-def: #1d4ed8;
-    --cm-string: #b91c1c;
-    --cm-number: #047857;
-    --cm-comment: #00650a;
+    --cm-keyword: #2563eb;
+    --cm-loop: #a8389f;
+    --cm-bool: #1d4ed8;
+    --cm-logic-op: #3b82f6;
+    --cm-builtin: #047857;
+    --cm-print: #a18200;
+    --cm-bracket: #c28e0e;
+    --cm-bracket-2: #8b46c4;
+    --cm-bracket-3: var(--cm-bool);
+    --cm-fstring-brace: #8b46c4;
+    --cm-def: #b07800;
+    --cm-string: #c2592b;
+    --cm-number: #059669;
+    --cm-comment: #1b7a00;
     --cm-operator: #334155;
     --cm-variable: #0f172a;
 
@@ -1044,6 +1054,12 @@ main {
 .cm-s-default .cm-atom,
 .cm-s-default .cm-bool-atom { color: var(--cm-bool); font-weight: 600; }
 .cm-s-default .cm-builtin { color: var(--cm-builtin); }
+.cm-s-default .cm-print-kw { color: var(--cm-print); font-weight: 600; }
+.cm-s-default .cm-code-bracket,
+.cm-s-default .cm-code-bracket-0 { color: var(--cm-bracket); }
+.cm-s-default .cm-code-bracket-1 { color: var(--cm-bracket-2); }
+.cm-s-default .cm-code-bracket-2 { color: var(--cm-bracket-3); }
+.cm-s-default .cm-fstring-brace { color: var(--cm-fstring-brace); font-weight: 600; }
 .cm-s-default .cm-def { color: var(--cm-def); }
 .cm-s-default .cm-string,
 .cm-s-default .cm-string-2 { color: var(--cm-string); }
