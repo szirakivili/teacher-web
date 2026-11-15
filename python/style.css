@@ -576,6 +576,18 @@ body {
     transform: translateY(0);
 }
 
+.btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn:disabled:hover {
+    background-color: var(--btn-bg);
+    border-color: var(--border-main);
+    transform: none;
+}
+
 .btn-primary {
     width: 100%;
     justify-content: center;
@@ -738,6 +750,11 @@ header {
     animation: none;
 }
 
+.exam-timer-badge.expired .exam-timer-value {
+    font-family: inherit !important;
+    letter-spacing: normal;
+}
+
 @keyframes pulse-warn {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.72; }
@@ -805,25 +822,6 @@ main {
     width: 100%;
     margin: 28px auto 80px auto;
     padding: 0 18px;
-}
-
-.exam-expired-banner {
-    display: none;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    background: linear-gradient(135deg, rgba(248, 81, 73, 0.16), rgba(220, 38, 38, 0.12));
-    border: 1px solid rgba(248, 81, 73, 0.45);
-    color: var(--accent-red);
-    padding: 13px 18px;
-    border-radius: 10px;
-    margin-bottom: 16px;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.exam-expired-banner.visible {
-    display: flex;
 }
 
 .notebook-sheet {
@@ -928,6 +926,12 @@ main {
     overflow-x: auto;
     overflow-y: hidden;
     padding: 6px 0;
+}
+
+.jp-markdown hr {
+    border: none;
+    border-top: 1px solid var(--border-cell);
+    margin: 16px 0;
 }
 
 /* =========================================================
@@ -1046,6 +1050,10 @@ main {
 
 .CodeMirror-selected {
     background: var(--cm-selection) !important;
+}
+
+.CodeMirror-hint span {
+    pointer-events: none;
 }
 
 .cm-s-default .cm-keyword { color: var(--cm-keyword); font-weight: 600; }

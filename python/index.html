@@ -208,8 +208,12 @@
           <span class="exam-timer-value" id="exam-timer-value">40:00</span>
         </div>
 
-        <button class="btn theme-toggle-trigger" type="button" title="Világos / Sötét téma váltása">
-          <i class="fa-solid fa-sun"></i> <span>Világos téma</span>
+        <button class="btn" id="undo-btn" type="button" title="Visszavonás (Ctrl+Z)" disabled>
+          <i class="fa-solid fa-rotate-left"></i> <span>Visszavonás</span>
+        </button>
+
+        <button class="btn" id="redo-btn" type="button" title="Újra (Ctrl+Y)" disabled>
+          <i class="fa-solid fa-rotate-right"></i> <span>Újra</span>
         </button>
 
         <button class="btn btn-run-all" id="run-all-btn" type="button" title="Összes cella futtatása">
@@ -220,6 +224,10 @@
           <i class="fa-solid fa-trash-can"></i> <span>Kimenetek törlése</span>
         </button>
 
+        <button class="btn theme-toggle-trigger" type="button" title="Világos / Sötét téma váltása">
+          <i class="fa-solid fa-sun"></i> <span>Világos téma</span>
+        </button>
+
         <div class="kernel-badge" id="kernel-status">
           <span class="kernel-dot"></span>
           <span id="kernel-status-text">Python 3 betöltése...</span>
@@ -228,10 +236,6 @@
     </header>
 
     <main>
-      <div class="exam-expired-banner" id="exam-expired-banner">
-        <i class="fa-solid fa-hourglass-end"></i>
-        <span>Letelt az idő!</span>
-      </div>
       <div class="notebook-sheet" id="notebook-container"></div>
     </main>
   </div>
@@ -366,7 +370,11 @@
             current === 'else' ||
             current === 'break' ||
             current === 'continue' ||
-            current === 'pass'
+            current === 'pass' ||
+            current === 'return' ||
+            current === 'import' ||
+            current === 'from' ||
+            current === 'as'
           )
         ) {
           return 'keyword loop-kw';
@@ -396,6 +404,22 @@
         return style;
       }
 
+      function consumeTripleComment(stream, state) {
+        while (!stream.eol()) {
+          if (stream.peek() === '\\') {
+            stream.next();
+            if (!stream.eol()) stream.next();
+            continue;
+          }
+          if (stream.match(state.tripleCommentQuote)) {
+            state.tripleCommentQuote = null;
+            return 'comment';
+          }
+          stream.next();
+        }
+        return 'comment';
+      }
+
       function tokenizeNormalPython(stream, state) {
         // f-string prefix (f"...", F"...", rf"...", fr"...") felismerése, az f a True-val egyező kék legyen
         if (
@@ -404,6 +428,13 @@
         ) {
           state.pendingFStringQuote = true;
           return 'atom bool-atom';
+        }
+
+        // Több soros kommentek ('''...''' vagy """...""") kezelése
+        const tripleMatch = stream.match(/^[rR]?(?:"""|''')/);
+        if (tripleMatch) {
+          state.tripleCommentQuote = tripleMatch[0].slice(-3);
+          return consumeTripleComment(stream, state);
         }
 
         const style = pyMode.token(stream, state.pyState);
@@ -417,6 +448,7 @@
             pyState: pyMode.startState ? pyMode.startState() : {},
             fstringStack: [],
             pendingFStringQuote: false,
+            tripleCommentQuote: null,
             bracketDepth: 0
           };
         },
@@ -425,10 +457,16 @@
             pyState: pyMode.copyState ? pyMode.copyState(state.pyState) : { ...state.pyState },
             fstringStack: cloneFstringStack(state.fstringStack),
             pendingFStringQuote: state.pendingFStringQuote,
+            tripleCommentQuote: state.tripleCommentQuote,
             bracketDepth: state.bracketDepth
           };
         },
         token: function(stream, state) {
+          // Aktív több soros komment folytatása a következő sorokban
+          if (state.tripleCommentQuote) {
+            return consumeTripleComment(stream, state);
+          }
+
           // Közvetlenül az f prefix utáni nyitó idézőjel kezelése
           if (state.pendingFStringQuote) {
             state.pendingFStringQuote = false;
@@ -832,11 +870,10 @@
       return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     }
 
-    function startCountdown(durationSeconds) {
+function startCountdown(durationSeconds) {
       const badge = document.getElementById('exam-timer-badge');
       const iconEl = document.getElementById('exam-timer-icon');
       const valueEl = document.getElementById('exam-timer-value');
-      const expiredBanner = document.getElementById('exam-expired-banner');
 
       if (examTimerInterval) clearInterval(examTimerInterval);
 
@@ -854,10 +891,10 @@
         if (remaining <= 0) {
           clearInterval(examTimerInterval);
           examTimerInterval = null;
-          valueEl.textContent = '00:00';
+          iconEl.className = 'fa-solid fa-hourglass-end';
+          valueEl.textContent = 'Lejárt az idő!';
           badge.classList.remove('warning');
           badge.classList.add('expired');
-          expiredBanner.classList.add('visible');
           return;
         }
 
@@ -932,6 +969,7 @@
       { text: 'zip', type: 'builtin' },
       { text: 'import', type: 'keyword' },
       { text: 'from', type: 'keyword' },
+      { text: 'as', type: 'keyword' },
       { text: 'def', type: 'keyword' },
       { text: 'return', type: 'keyword' },
       { text: 'if', type: 'keyword' },
@@ -952,7 +990,7 @@
     ];
 
     const TYPE_METHODS = {
-      str: ['upper', 'lower', 'capitalize', 'title', 'strip', 'lstrip', 'rstrip', 'split', 'join', 'replace', 'find', 'startswith', 'endswith', 'count', 'isdigit', 'isalpha', 'format'],
+      str: ['upper', 'lower', 'capitalize', 'title', 'strip', 'lstrip', 'rstrip', 'split', 'join', 'replace', 'find', 'startswith', 'endswith', 'count', 'isdigit', 'isalpha', 'isupper', 'islower', 'format'],
       list: ['append', 'extend', 'insert', 'remove', 'pop', 'clear', 'index', 'count', 'sort', 'reverse', 'copy'],
       dict: ['get', 'keys', 'values', 'items', 'update', 'pop', 'clear', 'copy', 'setdefault'],
       random: ['randint', 'random', 'choice', 'choices', 'shuffle', 'sample', 'randrange', 'uniform']
@@ -960,6 +998,10 @@
 
     function pythonHintProvider(cm) {
       const cursor = cm.getCursor();
+      const tokenType = cm.getTokenTypeAt(cursor);
+      if (tokenType && tokenType.includes('comment')) {
+        return null;
+      }
       const line = cm.getLine(cursor.line);
       const beforeCursor = line.slice(0, cursor.ch);
 
@@ -1459,6 +1501,9 @@ await __jp_cell_runner__()
         } else if (/^#\s+/.test(line)) {
           if (inList) { htmlLines.push('</ul>'); inList = false; }
           htmlLines.push(`<h1>${line.replace(/^#\s+/, '')}</h1>`);
+        } else if (/^-{3,}$/.test(line)) {
+          if (inList) { htmlLines.push('</ul>'); inList = false; }
+          htmlLines.push('<hr>');
         } else if (/^[-*]\s+/.test(line)) {
           if (!inList) { htmlLines.push('<ul>'); inList = true; }
           htmlLines.push(`<li>${line.replace(/^[-*]\s+/, '')}</li>`);
@@ -1511,6 +1556,36 @@ await __jp_cell_runner__()
       });
     }
 
+    let copiedFullLine = null;
+    let isInternalLineCopy = false;
+
+    document.addEventListener('copy', () => {
+      if (!isInternalLineCopy) {
+        copiedFullLine = null;
+      }
+    });
+
+    document.addEventListener('cut', () => {
+      copiedFullLine = null;
+    });
+
+    const HINT_CUSTOM_KEYS = {
+      Up: (cmInst, handle) => handle.moveFocus(-1),
+      Down: (cmInst, handle) => handle.moveFocus(1),
+      Tab: (cmInst, handle) => handle.pick(),
+      Enter: (cmInst, handle) => handle.pick(),
+      Left: () => CodeMirror.Pass,
+      Right: () => CodeMirror.Pass,
+      Home: (cmInst, handle) => {
+        handle.close();
+        cmInst.execCommand('goLineStartSmart');
+      },
+      End: (cmInst, handle) => {
+        handle.close();
+        cmInst.execCommand('goLineEnd');
+      }
+    };
+
     function renderNotebook() {
       const container = document.getElementById('notebook-container');
       container.innerHTML = '';
@@ -1524,6 +1599,7 @@ await __jp_cell_runner__()
             activeCellId = cell.id;
             document.querySelectorAll('.jp-cell').forEach(el => el.classList.remove('active'));
             cellEl.classList.add('active');
+            updateHistoryButtons();
           }
         });
 
@@ -1602,9 +1678,101 @@ await __jp_cell_runner__()
             extraKeys: {
               'Esc': () => openExitFullscreenWarning(),
               'Escape': () => openExitFullscreenWarning(),
+              'Tab': (cmInst) => {
+                if (cmInst.state.completionActive) {
+                  return CodeMirror.Pass;
+                }
+                if (cmInst.somethingSelected()) {
+                  cmInst.indentSelection('add');
+                } else {
+                  cmInst.replaceSelection('    ', 'end');
+                }
+              },
               'Shift-Enter': () => runCodeCell(cell.id),
               'Ctrl-Enter': () => runCodeCell(cell.id),
-              'Ctrl-Space': (cmInst) => cmInst.showHint({ hint: pythonHintProvider, completeSingle: false }),
+              'Ctrl-Space': (cmInst) => cmInst.showHint({
+                hint: pythonHintProvider,
+                completeSingle: false,
+                customKeys: HINT_CUSTOM_KEYS
+              }),
+              'Ctrl-C': (cmInst) => {
+                if (cmInst.somethingSelected()) {
+                  copiedFullLine = null;
+                  return CodeMirror.Pass;
+                }
+                const cursor = cmInst.getCursor();
+                const lineText = cmInst.getLine(cursor.line);
+                copiedFullLine = lineText;
+
+                isInternalLineCopy = true;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                  navigator.clipboard.writeText(lineText + '\n').catch(() => {});
+                } else {
+                  const tmp = document.createElement('textarea');
+                  tmp.value = lineText + '\n';
+                  tmp.style.position = 'fixed';
+                  tmp.style.opacity = '0';
+                  document.body.appendChild(tmp);
+                  tmp.select();
+                  try { document.execCommand('copy'); } catch (e) {}
+                  document.body.removeChild(tmp);
+                  cmInst.focus();
+                }
+                setTimeout(() => { isInternalLineCopy = false; }, 0);
+              },
+              'Ctrl-V': (cmInst) => {
+                if (copiedFullLine === null) {
+                  return CodeMirror.Pass;
+                }
+                const cursor = cmInst.getCursor();
+                if (cmInst.somethingSelected()) {
+                  cmInst.replaceSelection(copiedFullLine, 'end');
+                  return;
+                }
+                cmInst.operation(() => {
+                  cmInst.replaceRange(
+                    copiedFullLine + '\n',
+                    { line: cursor.line, ch: 0 },
+                    { line: cursor.line, ch: 0 },
+                    '+input'
+                  );
+                  cmInst.setCursor({ line: cursor.line + 1, ch: cursor.ch });
+                });
+              },
+              'Ctrl-D': (cmInst) => {
+                cmInst.operation(() => {
+                  if (!cmInst.somethingSelected()) {
+                    const cursor = cmInst.getCursor();
+                    const lineText = cmInst.getLine(cursor.line);
+                    cmInst.replaceRange(
+                      lineText + '\n',
+                      { line: cursor.line, ch: 0 },
+                      { line: cursor.line, ch: 0 },
+                      '+input'
+                    );
+                    cmInst.setCursor({ line: cursor.line + 1, ch: cursor.ch });
+                  } else {
+                    const from = cmInst.getCursor('from');
+                    const to = cmInst.getCursor('to');
+                    const endLine = (to.ch === 0 && to.line > from.line) ? to.line - 1 : to.line;
+                    const lines = [];
+                    for (let i = from.line; i <= endLine; i++) {
+                      lines.push(cmInst.getLine(i));
+                    }
+                    const lineCount = lines.length;
+                    cmInst.replaceRange(
+                      lines.join('\n') + '\n',
+                      { line: from.line, ch: 0 },
+                      { line: from.line, ch: 0 },
+                      '+input'
+                    );
+                    cmInst.setSelection(
+                      { line: from.line + lineCount, ch: from.ch },
+                      { line: to.line + lineCount, ch: to.ch }
+                    );
+                  }
+                });
+              },
               'Enter': (cmInst) => {
                 if (cmInst.state.completionActive) {
                   return CodeMirror.Pass;
@@ -1665,7 +1833,17 @@ await __jp_cell_runner__()
             }
           });
 
+          cm.on('focus', () => {
+            if (activeCellId !== cell.id) {
+              activeCellId = cell.id;
+              document.querySelectorAll('.jp-cell').forEach(el => el.classList.remove('active'));
+              cellEl.classList.add('active');
+            }
+            updateHistoryButtons();
+          });
+
           cm.on('change', (cmInst, change) => {
+            updateHistoryButtons();
             if (change.origin !== '+input' && change.origin !== 'paste') return;
             const lineNum = change.from.line;
             const lineText = cmInst.getLine(lineNum);
@@ -1704,9 +1882,21 @@ await __jp_cell_runner__()
 
           cm.on('inputRead', (cmInst, change) => {
             if (change.origin !== '+input') return;
+            const cursor = cmInst.getCursor();
+            const tokenType = cmInst.getTokenTypeAt(cursor);
+            if (tokenType && tokenType.includes('comment')) {
+              if (cmInst.state.completionActive) {
+                cmInst.state.completionActive.close();
+              }
+              return;
+            }
             const ch = change.text[0];
             if (ch && /[a-zA-Z0-9_.]/.test(ch)) {
-              cmInst.showHint({ hint: pythonHintProvider, completeSingle: false });
+              cmInst.showHint({
+                hint: pythonHintProvider,
+                completeSingle: false,
+                customKeys: HINT_CUSTOM_KEYS
+              });
             }
           });
 
@@ -1719,6 +1909,37 @@ await __jp_cell_runner__()
           cellEl.appendChild(mdDiv);
           container.appendChild(cellEl);
         }
+      });
+
+      const undoBtn = document.getElementById('undo-btn');
+      const redoBtn = document.getElementById('redo-btn');
+
+      function updateHistoryButtons() {
+        const cm = activeCellId ? editors[activeCellId] : null;
+        if (!cm) {
+          undoBtn.disabled = true;
+          redoBtn.disabled = true;
+          return;
+        }
+        const history = cm.historySize();
+        undoBtn.disabled = history.undo === 0;
+        redoBtn.disabled = history.redo === 0;
+      }
+
+      undoBtn.addEventListener('click', () => {
+        const cm = activeCellId ? editors[activeCellId] : null;
+        if (!cm) return;
+        cm.undo();
+        cm.focus();
+        updateHistoryButtons();
+      });
+
+      redoBtn.addEventListener('click', () => {
+        const cm = activeCellId ? editors[activeCellId] : null;
+        if (!cm) return;
+        cm.redo();
+        cm.focus();
+        updateHistoryButtons();
       });
     }
 
