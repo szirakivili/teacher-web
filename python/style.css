@@ -891,6 +891,19 @@ main {
     margin: 10px 0 4px 0;
 }
 
+.jp-markdown h4 {
+    font-size: 15.5px;
+    font-weight: 600;
+    margin: 8px 0 4px 0;
+}
+
+.jp-markdown h5 {
+    font-size: 14.5px;
+    font-weight: 700;
+    margin: 6px 0 3px 0;
+    color: var(--text-secondary);
+}
+
 .jp-markdown p {
     margin-bottom: 8px;
     color: var(--text-primary);
@@ -932,6 +945,93 @@ main {
     border: none;
     border-top: 1px solid var(--border-cell);
     margin: 16px 0;
+}
+
+/* Többszintű listák (akár 4+ szintig, vegyesen is) */
+.jp-markdown li > ul,
+.jp-markdown li > ol {
+    margin: 4px 0 4px 22px;
+}
+
+.jp-markdown ul {
+    list-style-type: disc;
+}
+
+.jp-markdown ul ul {
+    list-style-type: circle;
+}
+
+.jp-markdown ul ul ul {
+    list-style-type: square;
+}
+
+.jp-markdown ul ul ul ul {
+    list-style-type: disc;
+}
+
+.jp-markdown ol {
+    list-style-type: decimal;
+}
+
+.jp-markdown ol ol {
+    list-style-type: lower-alpha;
+}
+
+.jp-markdown ol ol ol {
+    list-style-type: lower-roman;
+}
+
+.jp-markdown ol ol ol ol {
+    list-style-type: decimal;
+}
+
+/* Idézet blokk (> ...) */
+.jp-markdown blockquote {
+    margin: 10px 0;
+    padding: 8px 14px;
+    border-left: 3.5px solid var(--jupyter-blue);
+    background-color: rgba(77, 163, 255, 0.08);
+    border-radius: 0 8px 8px 0;
+    color: var(--text-secondary);
+}
+
+.jp-markdown blockquote > *:last-child {
+    margin-bottom: 0;
+}
+
+/* Több soros kódrész (``` ... ```) */
+.jp-markdown .md-code-block {
+    margin: 10px 0;
+    background-color: var(--bg-cell-editor);
+    border: 1px solid var(--border-cell);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.jp-markdown .md-code-lang {
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: lowercase;
+    color: var(--text-secondary);
+    background-color: var(--btn-bg);
+    border-bottom: 1px solid var(--border-main);
+}
+
+.jp-markdown .md-code-block pre {
+    margin: 0;
+    padding: 10px 14px;
+    overflow-x: auto;
+    line-height: 1.55;
+}
+
+.jp-markdown .md-code-block pre code {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    border-radius: 0;
+    font-size: 13.5px;
+    color: var(--text-primary);
 }
 
 /* =========================================================

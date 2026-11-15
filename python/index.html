@@ -1457,15 +1457,30 @@ await __jp_cell_runner__()
     }
 
     function renderMarkdown(md) {
+      const fencedPlaceholders = [];
       const codePlaceholders = [];
       const mathPlaceholders = [];
 
-      let text = md.replace(/`([^`\n]+)`/g, (_, codeContent) => {
+      // 1. Több soros kódrészek (``` ... ```) kiemelése még minden más feldolgozás előtt
+      let text = md.replace(/(^|\r?\n) {0,3}```([^\n`]*)\r?\n([\s\S]*?)(?:^|\r?\n) {0,3}```[ \t]*(?=\r?\n|$)/g, (_, leadingNewline, lang, codeContent) => {
+        const id = fencedPlaceholders.length;
+        const cleanLang = (lang || '').trim();
+        const langAttr = cleanLang ? ` class="language-${escapeHtml(cleanLang)}"` : '';
+        const langBadge = cleanLang ? `<div class="md-code-lang">${escapeHtml(cleanLang)}</div>` : '';
+        fencedPlaceholders.push(
+          `<div class="md-code-block">${langBadge}<pre><code${langAttr}>${escapeHtml(codeContent)}</code></pre></div>`
+        );
+        return `${leadingNewline}\x00FENCED_${id}\x00`;
+      });
+
+      // 2. Soron belüli kód (`...`)
+      text = text.replace(/`([^`\n]+)`/g, (_, codeContent) => {
         const id = codePlaceholders.length;
         codePlaceholders.push(`<code>${escapeHtml(codeContent)}</code>`);
         return `\x00CODE_${id}\x00`;
       });
 
+      // 3. Blokk és soron belüli LaTeX képletek
       text = text.replace(/\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]/g, (_, d1, d2) => {
         const tex = (d1 !== undefined ? d1 : d2).trim();
         const id = mathPlaceholders.length;
@@ -1480,44 +1495,175 @@ await __jp_cell_runner__()
         return `\x00MATH_${id}\x00`;
       });
 
+      // 4. HTML karakterek menekítése és soron belüli formázások (félkövér, dőlt)
       text = escapeHtml(text);
 
       text = text.replace(/\*\*\*([^\s*](?:[^*]*?[^\s*])?|[^\s*])\*\*\*/g, '<strong><em>$1</em></strong>');
       text = text.replace(/\*\*([^\s*](?:[^*]*?[^\s*])?|[^\s*])\*\*/g, '<strong>$1</strong>');
       text = text.replace(/\*([^\s*](?:[^*\n]*?[^\s*])?|[^\s*])\*/g, '<em>$1</em>');
 
-      const lines = text.split('\n');
-      const htmlLines = [];
-      let inList = false;
+      // 5. Blokk elemek (címsorok, elválasztóvonal, idézetek, többszintű listák, kódrészek)
+      function renderBlockLines(lines) {
+        const htmlLines = [];
+        const listStack = []; // { indent, tag: 'ul' | 'ol', hasOpenLi }
 
-      for (const rawLine of lines) {
-        const line = rawLine.trim();
-        if (/^###\s+/.test(line)) {
-          if (inList) { htmlLines.push('</ul>'); inList = false; }
-          htmlLines.push(`<h3>${line.replace(/^###\s+/, '')}</h3>`);
-        } else if (/^##\s+/.test(line)) {
-          if (inList) { htmlLines.push('</ul>'); inList = false; }
-          htmlLines.push(`<h2>${line.replace(/^##\s+/, '')}</h2>`);
-        } else if (/^#\s+/.test(line)) {
-          if (inList) { htmlLines.push('</ul>'); inList = false; }
-          htmlLines.push(`<h1>${line.replace(/^#\s+/, '')}</h1>`);
-        } else if (/^-{3,}$/.test(line)) {
-          if (inList) { htmlLines.push('</ul>'); inList = false; }
-          htmlLines.push('<hr>');
-        } else if (/^[-*]\s+/.test(line)) {
-          if (!inList) { htmlLines.push('<ul>'); inList = true; }
-          htmlLines.push(`<li>${line.replace(/^[-*]\s+/, '')}</li>`);
-        } else {
-          if (inList) { htmlLines.push('</ul>'); inList = false; }
-          if (line.length > 0) {
-            htmlLines.push(`<p>${rawLine}</p>`);
+        const isBlockStart = (raw, trim) =>
+          trim.length === 0 ||
+          /^\x00FENCED_\d+\x00$/.test(trim) ||
+          /^\s*&gt;(?:\s|$)/.test(raw) ||
+          /^#{1,5}\s+/.test(trim) ||
+          /^-{3,}$/.test(trim) ||
+          /^[\t ]*[-*+]\s+/.test(raw) ||
+          /^[\t ]*\d+[.)]\s+/.test(raw);
+
+        function closeAllLists() {
+          while (listStack.length > 0) {
+            const closed = listStack.pop();
+            if (closed.hasOpenLi) htmlLines.push('</li>');
+            htmlLines.push(`</${closed.tag}>`);
           }
         }
+
+        function appendListItem(indent, tag, content) {
+          if (listStack.length === 0) {
+            listStack.push({ indent, tag, hasOpenLi: true });
+            htmlLines.push(`<${tag}><li>${content}`);
+            return;
+          }
+
+          let top = listStack[listStack.length - 1];
+
+          if (indent > top.indent) {
+            listStack.push({ indent, tag, hasOpenLi: true });
+            htmlLines.push(`<${tag}><li>${content}`);
+          } else if (indent < top.indent) {
+            while (listStack.length > 0 && indent < listStack[listStack.length - 1].indent) {
+              const closed = listStack.pop();
+              if (closed.hasOpenLi) htmlLines.push('</li>');
+              htmlLines.push(`</${closed.tag}>`);
+            }
+
+            top = listStack[listStack.length - 1];
+            if (!top) {
+              listStack.push({ indent, tag, hasOpenLi: true });
+              htmlLines.push(`<${tag}><li>${content}`);
+            } else if (top.tag === tag) {
+              if (top.hasOpenLi) htmlLines.push('</li>');
+              htmlLines.push(`<li>${content}`);
+              top.hasOpenLi = true;
+            } else {
+              const closed = listStack.pop();
+              if (closed.hasOpenLi) htmlLines.push('</li>');
+              htmlLines.push(`</${closed.tag}>`);
+              listStack.push({ indent, tag, hasOpenLi: true });
+              htmlLines.push(`<${tag}><li>${content}`);
+            }
+          } else {
+            if (top.tag === tag) {
+              if (top.hasOpenLi) htmlLines.push('</li>');
+              htmlLines.push(`<li>${content}`);
+              top.hasOpenLi = true;
+            } else {
+              const closed = listStack.pop();
+              if (closed.hasOpenLi) htmlLines.push('</li>');
+              htmlLines.push(`</${closed.tag}>`);
+              listStack.push({ indent, tag, hasOpenLi: true });
+              htmlLines.push(`<${tag}><li>${content}`);
+            }
+          }
+        }
+
+        let i = 0;
+        while (i < lines.length) {
+          const rawLine = lines[i];
+          const trimmed = rawLine.trim();
+
+          // Több soros kódblokk helyőrzője
+          if (/^\x00FENCED_\d+\x00$/.test(trimmed)) {
+            closeAllLists();
+            htmlLines.push(trimmed);
+            i++;
+            continue;
+          }
+
+          // Idézet blokk (> ...)
+          if (/^\s*&gt;(?:\s|$)/.test(rawLine)) {
+            closeAllLists();
+            const quoteInnerLines = [];
+            while (i < lines.length && /^\s*&gt;(?:\s|$)/.test(lines[i])) {
+              quoteInnerLines.push(lines[i].replace(/^\s*&gt;\s?/, ''));
+              i++;
+            }
+            htmlLines.push(`<blockquote>${renderBlockLines(quoteInnerLines)}</blockquote>`);
+            continue;
+          }
+
+          // Címsorok 1–5. szintig (# ... #####)
+          const headingMatch = trimmed.match(/^(#{1,5})\s+(.*)$/);
+          if (headingMatch) {
+            closeAllLists();
+            const level = headingMatch[1].length;
+            const headingContent = headingMatch[2].replace(/\\[ \t]*$/, '<br>');
+            htmlLines.push(`<h${level}>${headingContent}</h${level}>`);
+            i++;
+            continue;
+          }
+
+          // Vízszintes elválasztóvonal (---)
+          if (/^-{3,}$/.test(trimmed)) {
+            closeAllLists();
+            htmlLines.push('<hr>');
+            i++;
+            continue;
+          }
+
+          // Felsorolás (-, *, +) vagy számozott lista (1., 2., ...) bármilyen behúzási szinten
+          const ulMatch = rawLine.match(/^([\t ]*)[-*+]\s+(.*)$/);
+          const olMatch = rawLine.match(/^([\t ]*)\d+[.)]\s+(.*)$/);
+          if (ulMatch || olMatch) {
+            const match = ulMatch || olMatch;
+            const indent = match[1].replace(/\t/g, '    ').length;
+            const tag = ulMatch ? 'ul' : 'ol';
+            let itemContent = match[2];
+
+            while (/\\[ \t]*$/.test(itemContent) && i + 1 < lines.length) {
+              const nextRaw = lines[i + 1];
+              const nextTrimmed = nextRaw.trim();
+              if (isBlockStart(nextRaw, nextTrimmed)) break;
+              itemContent = itemContent.replace(/\\[ \t]*$/, '<br>') + nextTrimmed;
+              i++;
+            }
+            itemContent = itemContent.replace(/\\[ \t]*$/, '<br>');
+
+            appendListItem(indent, tag, itemContent);
+            i++;
+            continue;
+          }
+
+          // Normál bekezdés (a sor végi \ jel sortörést ad és összefűzi a sorokat)
+          closeAllLists();
+          if (trimmed.length > 0) {
+            let paraContent = rawLine;
+            while (/\\[ \t]*$/.test(paraContent) && i + 1 < lines.length) {
+              const nextRaw = lines[i + 1];
+              const nextTrimmed = nextRaw.trim();
+              if (isBlockStart(nextRaw, nextTrimmed)) break;
+              paraContent = paraContent.replace(/\\[ \t]*$/, '<br>') + nextRaw;
+              i++;
+            }
+            paraContent = paraContent.replace(/\\[ \t]*$/, '<br>');
+            htmlLines.push(`<p>${paraContent}</p>`);
+          }
+          i++;
+        }
+
+        closeAllLists();
+        return htmlLines.join('');
       }
-      if (inList) htmlLines.push('</ul>');
 
-      let finalHtml = htmlLines.join('');
+      let finalHtml = renderBlockLines(text.split(/\r?\n/));
 
+      // 6. Helyőrzők visszaállítása
       finalHtml = finalHtml.replace(/\x00MATH_(\d+)\x00/g, (_, idxStr) => {
         const item = mathPlaceholders[Number(idxStr)];
         if (!item) return '';
@@ -1536,6 +1682,10 @@ await __jp_cell_runner__()
 
       finalHtml = finalHtml.replace(/\x00CODE_(\d+)\x00/g, (_, idxStr) => {
         return codePlaceholders[Number(idxStr)] || '';
+      });
+
+      finalHtml = finalHtml.replace(/\x00FENCED_(\d+)\x00/g, (_, idxStr) => {
+        return fencedPlaceholders[Number(idxStr)] || '';
       });
 
       return finalHtml;
@@ -2021,7 +2171,7 @@ await __jp_cell_runner__()
         openNotebookView(fullFileName, jsonData, selectedMode);
       } catch (err) {
         showStartError(
-          `<i class="fa-solid fa-circle-exclamation"></i> Nem sikerült betölteni a(z) <strong>${escapeHtml(fullFileName)}</strong> fájlt. Ellenőrizd a fájlnevet és győződj meg róla, hogy a fájl elérhető a szerveren.`
+          `<i class="fa-solid fa-circle-exclamation"></i> A(z) <strong>${escapeHtml(fullFileName)}</strong> fájl nem található. Ellenőrizd a beírt munkafüzet nevét!`
         );
       } finally {
         startLoadBtn.disabled = false;
